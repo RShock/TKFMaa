@@ -2,6 +2,9 @@
 
 入口节点：`AutoBattleStart`；主要实现：`assets/resource/pipeline/regular_activity.json`。
 当前已从 Interface 取消注册，用户任务列表不提供“自动战斗”；以下流程保留供后续优化与测试参考。
+
+保留入口也接入 [统一异常恢复](task_recovery.md)，主体为 `AutoBattleStartAttempt`。
+由于其活动列表需人工选择，重启后不能自动重建原入口；重试必须再次识别列表，不能只凭已回主页报成功。
 本文描述按 `NEW` 推进未通关关卡的自动通关流程。指定关卡的扫荡与手动补刷见[消耗体力](daily_stamina.md)。
 
 ## 前置状态与选项

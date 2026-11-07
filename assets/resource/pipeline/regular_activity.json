@@ -1,10 +1,40 @@
 {
     "RegularActivityStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "RegularActivityStartAttempt",
+                    "label": "常规活动"
+                }
+            }
+        }
+    },
+    "RegularActivityStartAttempt": {
         "next": [
-            "DailyStaminaStart"
+            "DailyStaminaStartAttempt"
         ]
     },
     "AutoBattleStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "AutoBattleStartAttempt",
+                    "label": "自动战斗"
+                }
+            }
+        }
+    },
+    "AutoBattleStartAttempt": {
         "next": [
             "RegularActivityStageListDecision",
             "CommonStopOnMainWithRetries"
