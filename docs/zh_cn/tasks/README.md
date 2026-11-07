@@ -10,7 +10,7 @@
 ```mermaid
 flowchart TD
     Main[主界面]
-    Login[启动游戏] --> Main
+    Login[开始队列时自动检测并按需启动游戏] --> Main
     Main --> Friend[好友体力]
     Main --> Rewards[任务奖励]
     Main --> Alchemy[炼金订单]
@@ -26,7 +26,7 @@ flowchart TD
 
 | 功能     | 入口节点                  | 风险 | 文档                                |
 | -------- | ------------------------- | ---- | ----------------------------------- |
-| 启动游戏 | `GameLoginStart`          | 低   | [启动游戏](game_login.md)           |
+| 自动启动游戏 | `GameLoginLaunch`          | 低   | [启动游戏](game_login.md)           |
 | 商城购买 | `DailyShopStart`          | 高   | [商城购买](daily_shop.md)           |
 | 领取体力 | `DailyFriendStaminaStart` | 低   | [领取体力](daily_friend_stamina.md) |
 | 炼金订单 | `DailyAlchemyOrdersStart` | 中   | [炼金订单](daily_alchemy_orders.md) |
@@ -41,3 +41,9 @@ flowchart TD
 实机验证与调试记录由维护者在本地单独保存。
 
 加载等待、礼包关闭与主界面恢复见 [公共主界面恢复](common_navigation.md)。
+
+所有模块的故障重启或暂停、失败继续策略和恢复边界见 [统一异常恢复](task_recovery.md)。
+
+消耗体力内的图片录制、命名配置及选择入口见[自定义活动关卡](custom_stage.md)。
+
+- [配置每日定时执行](daily_schedule.md)：在开始任务右侧配置每天自动运行的时间。
