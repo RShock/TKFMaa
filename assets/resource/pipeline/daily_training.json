@@ -1,33 +1,49 @@
 {
     "DailyTrainingStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyTrainingStartAttempt",
+                    "label": "调教"
+                }
+            }
+        }
+    },
+    "DailyTrainingStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
             "DailyTrainingCloseStoryPrompt",
             "DailyTrainingCloseLimitPrompt",
             "DailyTrainingOpenFromMain",
-            "DailyTrainingDoneNoCount",
             "[JumpBack]CommonEnsureMain"
         ],
         "timeout": 10000
     },
     "DailyTrainingOpenFromMain": {
         "recognition": {
-            "type": "And",
+            "type": "OCR",
             "param": {
-                "all_of": [
-                    "CommonMainReady",
-                    "__DailyTrainingMainHasCount"
+                "roi": [
+                    570,
+                    1000,
+                    120,
+                    110
+                ],
+                "expected": [
+                    "调教"
                 ]
             }
         },
         "action": {
             "type": "Click",
             "param": {
-                "target": [
-                    640,
-                    1058
-                ]
+                "target": true
             }
         },
         "post_wait_freezes": {
@@ -43,53 +59,6 @@
             "DailyTrainingOpenFilter"
         ],
         "pre_wait_freezes": 300
-    },
-    "__DailyTrainingMainHasCount": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [
-                    595,
-                    1065,
-                    95,
-                    55
-                ],
-                "expected": [
-                    "^[1-9][0-9]*\\s*/\\s*50$"
-                ]
-            }
-        },
-        "inverse": false
-    },
-    "DailyTrainingDoneNoCount": {
-        "recognition": {
-            "type": "And",
-            "param": {
-                "all_of": [
-                    "CommonMainReady",
-                    "__DailyTrainingMainZeroCount"
-                ]
-            }
-        },
-        "next": [
-            "DailyTrainingDone"
-        ]
-    },
-    "__DailyTrainingMainZeroCount": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [
-                    595,
-                    1065,
-                    95,
-                    55
-                ],
-                "expected": [
-                    "^0+\\s*/\\s*50$"
-                ]
-            }
-        }
     },
     "DailyTrainingOpenFilter": {
         "recognition": {
