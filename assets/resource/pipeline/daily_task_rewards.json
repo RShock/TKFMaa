@@ -1,5 +1,20 @@
 {
     "DailyTaskRewardsStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyTaskRewardsStartAttempt",
+                    "label": "奖励领取"
+                }
+            }
+        }
+    },
+    "DailyTaskRewardsStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",

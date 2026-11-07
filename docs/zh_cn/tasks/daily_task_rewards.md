@@ -2,6 +2,8 @@
 
 入口节点：`DailyTaskRewardsStart`；实现文件：`assets/resource/pipeline/daily_task_rewards.json`、`agent/completion.py`、`agent/task_rewards.py`。
 
+入口经 [统一异常恢复](task_recovery.md) 执行 `DailyTaskRewardsStartAttempt`；首次异常按“遇到故障时行为”重启或暂停，最终失败按继续策略停止或跳过下一步骤。
+
 ## 前置状态
 
 - 游戏位于主界面，任务页面已解锁。
