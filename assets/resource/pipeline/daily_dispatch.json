@@ -1,5 +1,54 @@
 {
+    "DailyDispatchScheduleConfig": {
+        "attach": {
+            "enabled": false,
+            "auto_countdown": false,
+            "run_at": "03:32",
+            "close_game": false,
+            "manage_emulator": false,
+            "close_wait": false,
+            "close_emulator": false
+        }
+    },
+    "DailyDispatchRunNow": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyDispatchStartAttempt",
+                    "label": "每日派遣"
+                }
+            }
+        }
+    },
+    "DailyDispatchCloseGame": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "StopApp",
+            "param": {
+                "package": "com.pinkcore.tkfm"
+            }
+        }
+    },
     "DailyDispatchStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmDispatchSchedule",
+                "custom_action_param": {}
+            }
+        }
+    },
+    "DailyDispatchStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
@@ -8,7 +57,8 @@
             "[JumpBack]DailyDispatchCloseReturnPopup",
             "[JumpBack]CommonEnsureMain"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "rate_limit": 1000
     },
     "DailyDispatchOpenDrawerFromMain": {
         "recognition": {
@@ -31,14 +81,20 @@
         "next": [
             "DailyDispatchEnterFromDrawer"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "rate_limit": 1000
     },
     "DailyDispatchEnterFromDrawer": {
         "next": [
             "DailyDispatchClickActionableDrawerSlot",
             "DailyDispatchOpenBusyDrawerSlot"
         ],
-        "timeout": 5000
+        "timeout": 5000,
+        "rate_limit": 1000
     },
     "DailyDispatchClickActionableDrawerSlot": {
         "recognition": {
@@ -65,7 +121,12 @@
         "next": [
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "rate_limit": 1000
     },
     "DailyDispatchOpenBusyDrawerSlot": {
         "recognition": {
@@ -89,7 +150,12 @@
         "next": [
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "rate_limit": 1000
     },
     "__DailyDispatchDrawerTeamLabel": {
         "recognition": {
@@ -141,19 +207,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchDone"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchScanOverview": {
         "recognition": {
@@ -177,7 +240,8 @@
             "DailyDispatchOpenIdleSlot",
             "DailyDispatchVerifyComplete"
         ],
-        "timeout": 6000
+        "timeout": 6000,
+        "rate_limit": 1000
     },
     "DailyDispatchOpenCompletedSlot": {
         "recognition": {
@@ -200,21 +264,18 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCloseReturnPopup",
             "DailyDispatchReturnCompletedTeam"
         ],
         "max_hit": 8,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchReturnCompletedTeam": {
         "recognition": {
@@ -238,20 +299,17 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCloseReturnPopup",
             "[JumpBack]CommonWaitLoading"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchCloseReturnPopup": {
         "recognition": {
@@ -282,19 +340,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchOpenIdleSlot": {
         "recognition": {
@@ -317,20 +372,17 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchPrepareIdleSlot"
         ],
         "max_hit": 8,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchPrepareIdleSlot": {
         "next": [
@@ -340,7 +392,8 @@
             "DailyDispatchCheckPreconfiguredTeam",
             "DailyDispatchSelectLocationStart"
         ],
-        "timeout": 8000
+        "timeout": 8000,
+        "rate_limit": 1000
     },
     "DailyDispatchNeedSelectRoom": {
         "recognition": {
@@ -359,7 +412,8 @@
         },
         "next": [
             "DailyDispatchSelectLocationStart"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchLaunchReady": {
         "recognition": {
@@ -384,11 +438,16 @@
             "[JumpBack]CommonWaitLoading",
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
         "timeout": 8000,
         "on_error": [
             "DailyDispatchReturnOverviewFromBusySelection"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "__DailyDispatchStartButton": {
         "recognition": {
@@ -448,7 +507,8 @@
         "timeout": 8000,
         "on_error": [
             "DailyDispatchReturnOverviewFromSelection"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroom": {
         "recognition": {
@@ -470,7 +530,8 @@
             "DailyDispatchSelectBedroomTime2",
             "DailyDispatchSelectBedroomTime3",
             "DailyDispatchSelectBedroomTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeon": {
         "recognition": {
@@ -492,7 +553,8 @@
             "DailyDispatchSelectDungeonTime2",
             "DailyDispatchSelectDungeonTime3",
             "DailyDispatchSelectDungeonTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTraining": {
         "recognition": {
@@ -514,7 +576,8 @@
             "DailyDispatchSelectTrainingTime2",
             "DailyDispatchSelectTrainingTime3",
             "DailyDispatchSelectTrainingTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVault": {
         "recognition": {
@@ -536,7 +599,8 @@
             "DailyDispatchSelectTreasureVaultTime2",
             "DailyDispatchSelectTreasureVaultTime3",
             "DailyDispatchSelectTreasureVaultTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoom": {
         "recognition": {
@@ -558,7 +622,8 @@
             "DailyDispatchSelectSealRoomTime2",
             "DailyDispatchSelectSealRoomTime3",
             "DailyDispatchSelectSealRoomTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroomAfterSwipe": {
         "recognition": {
@@ -580,7 +645,8 @@
             "DailyDispatchSelectBedroomTime2",
             "DailyDispatchSelectBedroomTime3",
             "DailyDispatchSelectBedroomTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeonAfterSwipe": {
         "recognition": {
@@ -602,7 +668,8 @@
             "DailyDispatchSelectDungeonTime2",
             "DailyDispatchSelectDungeonTime3",
             "DailyDispatchSelectDungeonTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTrainingAfterSwipe": {
         "recognition": {
@@ -624,7 +691,8 @@
             "DailyDispatchSelectTrainingTime2",
             "DailyDispatchSelectTrainingTime3",
             "DailyDispatchSelectTrainingTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVaultAfterSwipe": {
         "recognition": {
@@ -646,7 +714,8 @@
             "DailyDispatchSelectTreasureVaultTime2",
             "DailyDispatchSelectTreasureVaultTime3",
             "DailyDispatchSelectTreasureVaultTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoomAfterSwipe": {
         "recognition": {
@@ -668,7 +737,8 @@
             "DailyDispatchSelectSealRoomTime2",
             "DailyDispatchSelectSealRoomTime3",
             "DailyDispatchSelectSealRoomTime4"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroomTime1": {
         "recognition": {
@@ -697,19 +767,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroomTime2": {
         "recognition": {
@@ -738,19 +805,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroomTime3": {
         "recognition": {
@@ -779,19 +843,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectBedroomTime4": {
         "recognition": {
@@ -820,19 +881,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeonTime1": {
         "recognition": {
@@ -861,19 +919,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeonTime2": {
         "recognition": {
@@ -902,19 +957,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeonTime3": {
         "recognition": {
@@ -943,19 +995,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectDungeonTime4": {
         "recognition": {
@@ -984,19 +1033,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTrainingTime1": {
         "recognition": {
@@ -1025,20 +1071,17 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam",
             "DailyDispatchSelectTrainingTime2"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTrainingTime2": {
         "recognition": {
@@ -1067,20 +1110,17 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam",
             "DailyDispatchSelectTrainingTime3"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTrainingTime3": {
         "recognition": {
@@ -1109,20 +1149,17 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam",
             "DailyDispatchSelectTrainingTime4"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTrainingTime4": {
         "recognition": {
@@ -1151,20 +1188,17 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam",
             "DailyDispatchReturnOverviewFromSelection"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVaultTime1": {
         "recognition": {
@@ -1193,19 +1227,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVaultTime2": {
         "recognition": {
@@ -1234,19 +1265,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVaultTime3": {
         "recognition": {
@@ -1275,19 +1303,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectTreasureVaultTime4": {
         "recognition": {
@@ -1316,19 +1341,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoomTime1": {
         "recognition": {
@@ -1357,19 +1379,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoomTime2": {
         "recognition": {
@@ -1398,19 +1417,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoomTime3": {
         "recognition": {
@@ -1439,19 +1455,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSelectSealRoomTime4": {
         "recognition": {
@@ -1480,19 +1493,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchCheckPreconfiguredTeam"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchSwipeLocationListDown": {
         "recognition": {
@@ -1512,67 +1522,43 @@
                 "duration": 1500
             }
         },
-        "post_wait_freezes": {
-            "time": 800,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchSelectBedroomAfterSwipe",
             "DailyDispatchSelectDungeonAfterSwipe",
             "DailyDispatchSelectTrainingAfterSwipe",
             "DailyDispatchSelectTreasureVaultAfterSwipe",
             "DailyDispatchSelectSealRoomAfterSwipe"
-        ]
+        ],
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchCheckPreconfiguredTeam": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyDispatchStartButton"
+                ]
+            }
+        },
         "next": [
-            "DailyDispatchLaunchReady",
-            "DailyDispatchAbortWhenTeamNotReady"
+            "[JumpBack]CommonWaitLoading",
+            "DailyDispatchLaunchReady"
         ],
-        "timeout": 8000
+        "timeout": 8000,
+        "rate_limit": 1000,
+        "on_error": [
+            "DailyDispatchAbortWhenTeamNotReady"
+        ]
     },
     "DailyDispatchAbortWhenTeamNotReady": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "出发"
-                ],
-                "roi": [
-                    270,
-                    1080,
-                    180,
-                    130
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    40,
-                    72
-                ]
-            }
-        },
-        "post_wait_freezes": {
-            "time": 800,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyDispatchReturnMainAfterOverviewTimeout"
+            "TkfmTaskFailure"
         ],
-        "pre_wait_freezes": 300
+        "timeout": 1000,
+        "focus": {
+            "Node.Action.Starting": "派遣队伍在等待后仍未就绪，不自动编队，不按派遣完成结束"
+        }
     },
     "DailyDispatchReturnOverviewFromSelection": {
         "recognition": {
@@ -1601,19 +1587,16 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 800,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 300,
+        "rate_limit": 1000
     },
     "DailyDispatchReturnOverviewFromBusySelection": {
         "recognition": {
@@ -1637,8 +1620,13 @@
         "next": [
             "DailyDispatchScanOverview"
         ],
-        "pre_wait_freezes": 300,
-        "max_hit": 1
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "max_hit": 1,
+        "rate_limit": 1000
     },
     "DailyDispatchReturnMainWhenAllBusy": {
         "recognition": {
@@ -1648,31 +1636,40 @@
                     "__DailyDispatchOverviewTitle",
                     "__DailyDispatchSlot1Busy",
                     "__DailyDispatchSlot2Busy",
-                    "__DailyDispatchSlot3Busy"
+                    "__DailyDispatchSlot3Busy",
+                    "__DailyDispatchSlot1Cancel",
+                    "__DailyDispatchSlot2Cancel",
+                    "__DailyDispatchSlot3Cancel"
                 ]
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    40,
-                    72
-                ]
+                "custom_action": "TkfmDispatchSchedule",
+                "custom_action_param": {
+                    "mode": "countdown"
+                }
             }
         },
         "next": [
-            "DailyDispatchDone"
+            "DailyDispatchLeaveOverview"
         ],
-        "pre_wait_freezes": 300,
-        "max_hit": 3
+        "max_hit": 3,
+        "rate_limit": 1000
     },
-    "DailyDispatchReturnMainAfterOverviewTimeout": {
+    "DailyDispatchLeaveOverview": {
         "recognition": {
             "type": "And",
             "param": {
                 "all_of": [
-                    "__DailyDispatchOverviewTitle"
+                    "__DailyDispatchOverviewTitle",
+                    "__DailyDispatchSlot1Busy",
+                    "__DailyDispatchSlot2Busy",
+                    "__DailyDispatchSlot3Busy",
+                    "__DailyDispatchSlot1Cancel",
+                    "__DailyDispatchSlot2Cancel",
+                    "__DailyDispatchSlot3Cancel"
                 ]
             }
         },
@@ -1685,27 +1682,28 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 1000,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyDispatchDone"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "max_hit": 3,
+        "rate_limit": 1000
+    },
+    "DailyDispatchReturnMainAfterOverviewTimeout": {
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "timeout": 1000
     },
     "DailyDispatchStopAfterOverviewTimeout": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "action": {
-            "type": "StopTask"
-        }
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "timeout": 1000
     },
     "__DailyDispatchOverviewTitle": {
         "recognition": {
@@ -1744,7 +1742,8 @@
     "DailyDispatchDone": {
         "next": [
             "CommonStopOnMainWithRetries"
-        ]
+        ],
+        "rate_limit": 1000
     },
     "__DailyDispatchBusySelectionStatus": {
         "recognition": {
@@ -1835,7 +1834,10 @@
                     "__DailyDispatchOverviewTitle",
                     "__DailyDispatchSlot1Busy",
                     "__DailyDispatchSlot2Busy",
-                    "__DailyDispatchSlot3Busy"
+                    "__DailyDispatchSlot3Busy",
+                    "__DailyDispatchSlot1Cancel",
+                    "__DailyDispatchSlot2Cancel",
+                    "__DailyDispatchSlot3Cancel"
                 ]
             }
         },
@@ -1848,6 +1850,103 @@
             "DailyDispatchReturnMainWhenAllBusy"
         ],
         "timeout": 6000,
-        "max_hit": 3
+        "max_hit": 3,
+        "rate_limit": 1000
+    },
+    "__DailyDispatchSlot1Cancel": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "取消派遣"
+                ],
+                "roi": [
+                    500,
+                    925,
+                    145,
+                    60
+                ]
+            }
+        }
+    },
+    "__DailyDispatchSlot2Cancel": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "取消派遣"
+                ],
+                "roi": [
+                    500,
+                    1055,
+                    145,
+                    60
+                ]
+            }
+        }
+    },
+    "__DailyDispatchSlot3Cancel": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "取消派遣"
+                ],
+                "roi": [
+                    500,
+                    1185,
+                    145,
+                    60
+                ]
+            }
+        }
+    },
+    "DailyDispatchCountdownSlot1": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    270,
+                    940,
+                    120,
+                    35
+                ],
+                "expected": [
+                    "[0-9]{2}[:：][0-5][0-9][:：][0-5][0-9]"
+                ]
+            }
+        }
+    },
+    "DailyDispatchCountdownSlot2": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    270,
+                    1070,
+                    120,
+                    35
+                ],
+                "expected": [
+                    "[0-9]{2}[:：][0-5][0-9][:：][0-5][0-9]"
+                ]
+            }
+        }
+    },
+    "DailyDispatchCountdownSlot3": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    270,
+                    1200,
+                    120,
+                    35
+                ],
+                "expected": [
+                    "[0-9]{2}[:：][0-5][0-9][:：][0-5][0-9]"
+                ]
+            }
+        }
     }
 }
