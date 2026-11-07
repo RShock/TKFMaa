@@ -46,7 +46,7 @@
                 "指定协会商店购买物品"
             ],
             "doc": [
-                "从商店进入购买流程，根据输入列表分别扫描交易所和协会商店，购买所有未售罄的匹配商品。"
+                "分别勾选交易所和协会商店商品。商品只按固定分辨率图片识别，图片命中后直接购买，不使用 OCR 判断商品或售罄。旧文字清单已停用，请重新确认勾选项。"
             ]
         },
         {
@@ -3287,55 +3287,144 @@
             ]
         },
         "指定购买物品": {
-            "type": "input",
-            "inputs": [
-                {
-                    "name": "物品列表",
-                    "pipeline_type": "string",
-                    "default": "紧急录用证|初级体力药水|招募命令",
-                    "verify": "^[^\\n]+$",
-                    "pattern_msg": "请输入单行的分隔列表，不要换行"
-                }
+            "type": "checkbox",
+            "description": "仅识别并购买勾选的商品，可全部取消。全部商品使用固定分辨率图片识别，命中后直接购买；不再使用 OCR 判断商品、详情名称或售罄。旧文字清单不再使用，请重新确认勾选项。",
+            "default_case": [
+                "招募命令",
+                "初级体力药水"
             ],
-            "pipeline_override": {
-                "DailyShopExchangeTargetItem": {
-                    "recognition": {
-                        "type": "Custom",
-                        "param": {
-                            "custom_recognition": "DailyShopExchangeTargetItem",
-                            "custom_recognition_param": {
-                                "target_names": "{物品列表}"
-                            }
+            "cases": [
+                {
+                    "name": "招募命令",
+                    "pipeline_override": {
+                        "__DailyShopExchangeEmergencyRecruitmentTicket": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "初级体力药水",
+                    "pipeline_override": {
+                        "__DailyShopExchangeBasicStaminaPotion": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "初级材料（打折）",
+                    "pipeline_override": {
+                        "__DailyShopExchangeBasicMaterialDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "中级材料（打折）",
+                    "pipeline_override": {
+                        "__DailyShopExchangeIntermediateMaterialDiscount": {
+                            "enabled": true
                         }
                     }
                 }
-            }
+            ]
         },
         "指定协会商店购买物品": {
-            "type": "input",
-            "inputs": [
-                {
-                    "name": "物品列表",
-                    "pipeline_type": "string",
-                    "default": "召唤契约|魔晶石|阿克色记录",
-                    "verify": "^[^\\n]+$",
-                    "pattern_msg": "请输入单行的分隔列表，不要换行"
-                }
+            "type": "checkbox",
+            "description": "仅识别并购买勾选的商品，可全部取消。召唤契约、阿克色记录、银币及其他折扣商品均使用固定分辨率图片识别，命中后直接购买；不再使用 OCR 判断商品、详情名称或售罄。新增选项默认不勾选。",
+            "default_case": [
+                "召唤契约",
+                "阿克色记录"
             ],
-            "pipeline_override": {
-                "DailyShopGuildTargetItem": {
-                    "recognition": {
-                        "type": "Custom",
-                        "param": {
-                            "custom_recognition": "DailyShopGuildTargetItem",
-                            "custom_recognition_param": {
-                                "shop_id": "guild",
-                                "target_names": "{物品列表}"
-                            }
+            "cases": [
+                {
+                    "name": "召唤契约",
+                    "pipeline_override": {
+                        "__DailyShopGuildSummoningContract": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "阿克色记录",
+                    "pipeline_override": {
+                        "__DailyShopGuildAkaseRecord": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "银币（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildSilverDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "藤蔓（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildVineDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "淫魔虫（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildSuccubusWormDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "烈风之石（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildGaleStoneDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "光明之石（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildLightStoneDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "电击棒（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildShockBatonDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "史莱姆（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildSlimeDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "黑暗之石（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildDarkStoneDiscount": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "火焰之石（打折）",
+                    "pipeline_override": {
+                        "__DailyShopGuildFireStoneDiscount": {
+                            "enabled": true
                         }
                     }
                 }
-            }
+            ]
         }
     }
 }
