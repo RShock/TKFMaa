@@ -1,5 +1,20 @@
 {
     "DailyAlchemyOrdersStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyAlchemyOrdersStartAttempt",
+                    "label": "炼金订单"
+                }
+            }
+        }
+    },
+    "DailyAlchemyOrdersStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
@@ -115,7 +130,10 @@
             "DailyAlchemyOrdersDeliverVisibleOrder",
             "DailyAlchemyOrdersVerifyComplete"
         ],
-        "timeout": 5000
+        "timeout": 5000,
+        "on_error": [
+            "DailyAlchemyOrdersAbortToMain"
+        ]
     },
     "DailyAlchemyOrdersDeliverVisibleOrder": {
         "recognition": {
@@ -146,30 +164,40 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": true,
-                "target_offset": [
-                    70,
-                    70,
-                    0,
-                    0
+                "target": [
+                    85,
+                    1040
                 ]
             }
         },
         "post_wait_freezes": {
-            "time": 600,
+            "time": 700,
             "target": [
-                0,
-                0,
-                0,
-                0
+                20,
+                930,
+                130,
+                220
             ]
         },
         "next": [
-            "[JumpBack]CommonCloseReward",
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersAwaitDeliveryResult"
         ],
-        "max_hit": 7,
-        "pre_wait_freezes": 300
+        "max_hit": 9,
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyAlchemyOrdersAbortToMain"
+        ]
+    },
+    "DailyAlchemyOrdersAbortToMain": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "[JumpBack]CommonCloseReward",
+            "CommonEnsureMain"
+        ],
+        "timeout": 15000
     },
     "DailyAlchemyOrdersReturnMain": {
         "recognition": {
@@ -245,7 +273,7 @@
             "type": "OCR",
             "param": {
                 "expected": [
-                    "订单\\s*[0-7]\\s*/\\s*7"
+                    "^订单\\s*([0-7]\\s*/\\s*7|[0-9]\\s*/\\s*9)\\s*$"
                 ],
                 "roi": [
                     0,
@@ -342,6 +370,76 @@
             "DailyAlchemyOrdersReturnMain"
         ],
         "timeout": 5000,
-        "max_hit": 3
+        "max_hit": 3,
+        "on_error": [
+            "DailyAlchemyOrdersAbortToMain"
+        ]
+    },
+    "DailyAlchemyOrdersAwaitDeliveryResult": {
+        "next": [
+            "DailyAlchemyOrdersCloseDeliveryReward"
+        ],
+        "timeout": 3500,
+        "on_error": [
+            "DailyAlchemyOrdersDeliveryRetry"
+        ]
+    },
+    "DailyAlchemyOrdersDeliverySucceeded": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "post_delay": 400,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ]
+    },
+    "DailyAlchemyOrdersDeliveryRetry": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "max_hit": 1,
+        "next": [
+            "DailyAlchemyOrdersDeliverVisibleOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersAbortToMain"
+        ]
+    },
+    "DailyAlchemyOrdersCloseDeliveryReward": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "确定",
+                    "确认"
+                ],
+                "roi": [
+                    300,
+                    700,
+                    120,
+                    80
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                300,
+                700,
+                120,
+                80
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyAlchemyOrdersDeliverySucceeded"
+        ]
     }
 }
