@@ -95,3 +95,9 @@
 - ADB内部画面按720×1280裁剪两张图，路线为目前活动→入口→纵向关卡列表，确认页面后向下最多滚动6次。关卡详情复用扫荡或直接战斗，体力及资源恢复沿用现有处理。
 - UI与装配位于assets/resource/custom/TkfmCustomStage.cs，页面状态机位于assets/resource/pipeline/custom_stage.json。私人图片不提交，不把开发启动作为功能验证。
 
+## 智能派遣与配置日程
+
+- 派遣可选读取三队完整倒计时，以最长值加5秒预约后续独立派遣，成功后续约；时间不全、失败或停止不续约。复用既有每实例单份预约及日志取消入口。
+- 配置每日定时复用MFAAvalonia 2.16.2原生TimerModel，在开始任务右侧设置多个每天固定时间，运行当时勾选的全部任务。启用时按实例绑定且不强制中断当前队列，离线不补跑。
+- 实现与边界见公开任务文档daily_dispatch.md、daily_schedule.md及assets/resource/custom/doc.md；修改后重启开发界面，不自动执行任务。
+
