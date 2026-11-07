@@ -17,9 +17,18 @@
     "resource": [
         {
             "name": "官服",
+            "label": "工口服务器",
             "path": [
                 "./resource"
-            ]
+            ],
+            "description": "游戏包 com.pinkcore.tkfm；开始任务时自动检测游戏状态。"
+        },
+        {
+            "name": "erolab服务器",
+            "path": [
+                "./resource"
+            ],
+            "description": "游戏包 com.pinkcore.tkfm.erolabs；开始任务时自动检测游戏状态。"
         }
     ],
     "agent": {
@@ -29,13 +38,6 @@
         ]
     },
     "task": [
-        {
-            "name": "启动游戏",
-            "entry": "GameLoginStart",
-            "option": [
-                "选择服务器"
-            ]
-        },
         {
             "name": "商城购买",
             "entry": "DailyShopStart",
@@ -115,54 +117,6 @@
         }
     ],
     "option": {
-        "选择服务器": {
-            "type": "select",
-            "default_case": "工口服务器",
-            "cases": [
-                {
-                    "name": "工口服务器",
-                    "pipeline_override": {
-                        "GameLoginStart": {
-                            "action": {
-                                "type": "StopApp",
-                                "param": {
-                                    "package": "com.pinkcore.tkfm"
-                                }
-                            }
-                        },
-                        "GameLoginLaunch": {
-                            "action": {
-                                "type": "StartApp",
-                                "param": {
-                                    "package": "com.pinkcore.tkfm"
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "erolab服务器",
-                    "pipeline_override": {
-                        "GameLoginStart": {
-                            "action": {
-                                "type": "StopApp",
-                                "param": {
-                                    "package": "com.pinkcore.tkfm.erolabs"
-                                }
-                            }
-                        },
-                        "GameLoginLaunch": {
-                            "action": {
-                                "type": "StartApp",
-                                "param": {
-                                    "package": "com.pinkcore.tkfm.erolabs"
-                                }
-                            }
-                        }
-                    }
-                }
-            ]
-        },
         "体力消耗关卡": {
             "type": "select",
             "default_case": "Trick or Sweet - 研究-01",

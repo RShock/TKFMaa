@@ -16,9 +16,46 @@
             "CommonReturnMainFromDispatchOverview",
             "CommonReturnDispatchOverviewFromSelection",
             "CommonReturnMainFromStaminaStageDetail",
-            "CommonReturnMainFromStaminaStageList"
+            "CommonReturnMainFromStaminaStageList",
+            "CommonReturnMainByBackButton"
         ],
         "timeout": 8000
+    },
+    "CommonReturnMainByBackButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "Common/TopLeftBack720.png",
+                "roi": [
+                    0,
+                    45,
+                    125,
+                    60
+                ],
+                "threshold": 0.85
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                15,
+                52,
+                85,
+                44
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "CommonEnsureMain"
+        ],
+        "max_hit": 6
     },
     "CommonReturnMainFromShop": {
         "recognition": {

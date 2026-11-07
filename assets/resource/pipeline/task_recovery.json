@@ -1,0 +1,43 @@
+{
+    "TkfmRecoveryConfig": {
+        "attach": {
+            "login_packages": [
+                "com.pinkcore.tkfm",
+                "com.pinkcore.tkfm.erolabs"
+            ],
+            "preserve_hits": [
+                "DailyStaminaUsePotionPopup",
+                "DailyStaminaBuyStaminaPopup",
+                "RegularActivityUsePotionPopup",
+                "RegularActivityBuyStaminaPopup",
+                "DailyTrainingClickCenterSlow",
+                "DailyTrainingClickCenterAllPoints",
+                "DailyRecruitmentCycleCompleted"
+            ]
+        }
+    },
+    "TkfmRecoveryRestartGame": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "StopApp",
+            "param": {
+                "package": "com.pinkcore.tkfm"
+            }
+        },
+        "next": [
+            "GameLoginLaunch"
+        ],
+        "focus": {
+            "Node.Action.Starting": "异常恢复：结束游戏进程并重新登录；当前步骤仅允许一次重启"
+        }
+    },
+    "TkfmTaskFailure": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "inverse": true,
+        "timeout": 1000
+    }
+}

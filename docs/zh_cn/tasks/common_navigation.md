@@ -33,11 +33,20 @@ flowchart TD
     Verify -->|主界面| Return
     Verify -->|候选识别超时| Fail[恢复失败，交由调用方处理]
     Check -->|其他已配置页面| Legacy[执行已有返回动作并交回父流程]
+    Check -->|未命中已有页面且左上返回按钮图片命中，未达 6 次上限| GenericBack[点击识别到的返回按钮]
+    GenericBack --> Check
     Check -->|候选识别超时| Fail
 ```
 
 商店、任务页、玩家信息页和召唤页的返回节点显式连接主界面确认，候选列表超时为 10 秒。
 `CommonEnsureMain` 本身的候选列表超时为 8 秒，失败时如何处理由调用方决定。
+
+当消耗体力找不到目标活动并停在选卡页时，后续调教等任务的入口会进入 `CommonEnsureMain`。
+已配置页面均未命中时，`CommonReturnMainByBackButton` 在左上角 `[0,45,125,60]` 内匹配
+`Common/TopLeftBack720.png`，只在按钮图片命中后点击，并重新进入 `CommonEnsureMain`。
+每次点击后仍处理加载、弹窗和当前页面，确认 `CommonMainReady` 后才交回原任务入口继续。
+同一任务最多点击 6 次通用返回；无按钮、页面无法识别或次数耗尽时恢复失败，不点击猜测坐标。
+模板来自 ADB 设备截图归一为 720x1280 后裁剪的稳定箭头按钮，不使用活动背景或页签图片。
 
 ```mermaid
 flowchart TD

@@ -12,6 +12,7 @@ EXEMPT_NODES = {
     "DailyStaminaSkipSweepAnimationLower": "skip button is only available during the sweep animation",
     "DailyStaminaSkipSweepAnimationUpper": "skip button is only available during the sweep animation",
     "GameTapTitleScreen": "title screen background is continuously animated",
+    "GameLoginWaitTapScreen": "fixed lower-screen tap is the fallback while the advertisement return button is absent",
 }
 
 
