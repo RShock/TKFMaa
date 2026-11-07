@@ -1,11 +1,34 @@
 {
     "DailyRecruitmentStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyRecruitmentStartAttempt",
+                    "label": "全境征才"
+                }
+            }
+        }
+    },
+    "DailyRecruitmentStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
             "[JumpBack]CommonCloseReward",
-            "[JumpBack]DailyRecruitmentCollectSkip",
-            "[JumpBack]DailyRecruitmentCollectClose",
+            "DailyRecruitmentSlot1CountRecruit",
+            "DailyRecruitmentSlot1CountLeader",
+            "DailyRecruitmentSlot2CountRecruit",
+            "DailyRecruitmentSlot2CountLeader",
+            "DailyRecruitmentSlot3CountRecruit",
+            "DailyRecruitmentSlot3CountLeader",
+            "DailyRecruitmentSlot4CountRecruit",
+            "DailyRecruitmentSlot4CountLeader",
+            "DailyRecruitmentCollectSkip",
+            "DailyRecruitmentCollectClose",
             "DailyRecruitmentCollectResults",
             "DailyRecruitmentCycleEntry",
             "DailyRecruitmentSlot1Open",
@@ -38,24 +61,25 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 1000,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentOpenFullRegion"
         ],
         "max_hit": 3,
         "on_error": [
-            "[JumpBack]DailyRecruitmentStart"
+            "[JumpBack]DailyRecruitmentStartAttempt"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                980,
+                170,
+                130
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300
     },
     "DailyRecruitmentOpenFullRegion": {
         "recognition": {
@@ -80,23 +104,29 @@
         },
         "next": [
             "[JumpBack]CommonWaitLoading",
-            "[JumpBack]DailyRecruitmentStart"
+            "[JumpBack]DailyRecruitmentStartAttempt"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                0,
+                1120,
+                210,
+                90
+            ],
+            "timeout": 1200
+        }
     },
     "DailyRecruitmentCollectResults": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    248,
-                    1016,
-                    218,
-                    63
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentOverviewTitle",
+                    "__DailyRecruitmentCollectAllButton"
                 ],
-                "expected": [
-                    "一键录取"
-                ]
+                "box_index": 2
             }
         },
         "action": {
@@ -106,27 +136,34 @@
             }
         },
         "next": [
-            "DailyRecruitmentCollectSkip",
-            "DailyRecruitmentCollectClose"
+            "DailyRecruitmentCollectResultRouter"
         ],
-        "on_error": [
-            "DailyRecruitmentCollectCloseFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                265,
+                1025,
+                190,
+                46
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 4
     },
     "DailyRecruitmentCollectSkip": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
+                "template": "DailyRecruitment/RecruitSkip720.png",
                 "roi": [
-                    511,
-                    37,
-                    142,
-                    80
+                    515,
+                    35,
+                    135,
+                    83
                 ],
-                "expected": [
-                    "SKIP"
-                ]
+                "threshold": 0.82
             }
         },
         "action": {
@@ -136,27 +173,21 @@
             }
         },
         "next": [
-            "DailyRecruitmentCollectClose"
+            "DailyRecruitmentCollectResultRouter"
         ],
-        "on_error": [
-            "DailyRecruitmentCollectCloseFallback"
-        ]
+        "post_delay": 200,
+        "timeout": 20000,
+        "max_hit": 12
     },
     "DailyRecruitmentCollectClose": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    250,
-                    1150,
-                    240,
-                    95
+                "all_of": [
+                    "__DailyRecruitmentResultTitle",
+                    "__DailyRecruitmentResultClose"
                 ],
-                "expected": [
-                    "确定",
-                    "确认",
-                    "关闭"
-                ]
+                "box_index": 1
             }
         },
         "action": {
@@ -166,26 +197,27 @@
             }
         },
         "next": [
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentCollectReturnRouter"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                265,
+                1180,
+                190,
+                46
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 8
     },
     "DailyRecruitmentCollectCloseFallback": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    360,
-                    1200
-                ]
-            }
-        },
         "next": [
-            "DailyRecruitmentCycleRouter"
-        ]
+            "DailyRecruitmentCollectResultRouter"
+        ],
+        "timeout": 20000
     },
     "__DailyRecruitmentOverviewTitle": {
         "recognition": {
@@ -207,7 +239,14 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseReward",
-            "DailyRecruitmentCollectResults",
+            "DailyRecruitmentSlot1CountRecruit",
+            "DailyRecruitmentSlot1CountLeader",
+            "DailyRecruitmentSlot2CountRecruit",
+            "DailyRecruitmentSlot2CountLeader",
+            "DailyRecruitmentSlot3CountRecruit",
+            "DailyRecruitmentSlot3CountLeader",
+            "DailyRecruitmentSlot4CountRecruit",
+            "DailyRecruitmentSlot4CountLeader",
             "DailyRecruitmentSlot1Open",
             "DailyRecruitmentSlot2Open",
             "DailyRecruitmentSlot3Open",
@@ -240,8 +279,9 @@
     },
     "DailyRecruitmentCycleRouter": {
         "next": [
+            "DailyRecruitmentBudgetFinished",
             "DailyRecruitmentCycleGate",
-            "DailyRecruitmentReturnFromOverview"
+            "TkfmTaskFailure"
         ],
         "timeout": 10000
     },
@@ -259,7 +299,7 @@
         "next": [
             "DailyRecruitmentOverviewRouter"
         ],
-        "max_hit": 1
+        "max_hit": 101
     },
     "DailyRecruitmentOverviewComplete": {
         "recognition": {
@@ -274,17 +314,13 @@
     },
     "DailyRecruitmentCancelSetupOnError": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    120,
-                    1000,
-                    220,
-                    90
+                "all_of": [
+                    "__DailyRecruitmentSetupReady",
+                    "__DailyRecruitmentSetupCancel"
                 ],
-                "expected": [
-                    "取消"
-                ]
+                "box_index": 1
             }
         },
         "action": {
@@ -296,7 +332,16 @@
         "next": [
             "DailyRecruitmentOverviewRouter"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                120,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        }
     },
     "DailyRecruitmentSlot1Open": {
         "recognition": {
@@ -304,7 +349,7 @@
             "param": {
                 "all_of": [
                     "__DailyRecruitmentOverviewTitle",
-                    "__DailyRecruitmentSlot1Empty"
+                    "__DailyRecruitmentSlot1CanOpen"
                 ],
                 "box_index": 1
             }
@@ -315,15 +360,6 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot1Decision"
         ],
@@ -331,7 +367,18 @@
             "DailyRecruitmentCancelSetupOnError"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                290,
+                280,
+                145,
+                60
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "timeout": 10000
     },
     "__DailyRecruitmentSlot1Empty": {
         "recognition": {
@@ -355,7 +402,7 @@
             "param": {
                 "all_of": [
                     "__DailyRecruitmentOverviewTitle",
-                    "__DailyRecruitmentSlot2Empty"
+                    "__DailyRecruitmentSlot2CanOpen"
                 ],
                 "box_index": 1
             }
@@ -366,15 +413,6 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot2Decision"
         ],
@@ -382,7 +420,18 @@
             "DailyRecruitmentCancelSetupOnError"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                290,
+                492,
+                145,
+                60
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "timeout": 10000
     },
     "__DailyRecruitmentSlot2Empty": {
         "recognition": {
@@ -406,7 +455,7 @@
             "param": {
                 "all_of": [
                     "__DailyRecruitmentOverviewTitle",
-                    "__DailyRecruitmentSlot3Empty"
+                    "__DailyRecruitmentSlot3CanOpen"
                 ],
                 "box_index": 1
             }
@@ -417,15 +466,6 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot3Decision"
         ],
@@ -433,7 +473,18 @@
             "DailyRecruitmentCancelSetupOnError"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                290,
+                704,
+                145,
+                60
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "timeout": 10000
     },
     "__DailyRecruitmentSlot3Empty": {
         "recognition": {
@@ -457,7 +508,7 @@
             "param": {
                 "all_of": [
                     "__DailyRecruitmentOverviewTitle",
-                    "__DailyRecruitmentSlot4Empty"
+                    "__DailyRecruitmentSlot4CanOpen"
                 ],
                 "box_index": 1
             }
@@ -468,15 +519,6 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot4Decision"
         ],
@@ -484,7 +526,18 @@
             "DailyRecruitmentCancelSetupOnError"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                290,
+                916,
+                145,
+                60
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "timeout": 10000
     },
     "__DailyRecruitmentSlot4Empty": {
         "recognition": {
@@ -507,9 +560,21 @@
             "DailyRecruitmentSlot1SkipLeader",
             "DailyRecruitmentSlot1RecruitGuaranteed",
             "DailyRecruitmentSlot1Refresh",
-            "DailyRecruitmentSlot1RecruitFallback"
+            "DailyRecruitmentSlot1RecruitFallback",
+            "DailyRecruitmentSlot1Decision"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "ready",
+                    "slot": 1
+                }
+            }
+        },
+        "rate_limit": 1000
     },
     "DailyRecruitmentSlot1SkipLeader": {
         "recognition": {
@@ -517,7 +582,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "skip_leader"
+                    "mode": "skip_leader",
+                    "slot": 1
                 }
             }
         },
@@ -530,19 +596,21 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot1CountLeader"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                120,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot1Refresh": {
         "recognition": {
@@ -550,7 +618,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "refresh"
+                    "mode": "refresh",
+                    "slot": 1
                 }
             }
         },
@@ -563,20 +632,23 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot1Decision"
         ],
         "max_hit": 3,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                570,
+                610,
+                70,
+                70
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "rate_limit": 1000,
+        "timeout": 10000
     },
     "DailyRecruitmentSlot1RecruitGuaranteed": {
         "recognition": {
@@ -584,11 +656,13 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_guaranteed"
+                    "mode": "recruit_guaranteed",
+                    "slot": 1
                 }
             }
         },
         "next": [
+            "DailyRecruitmentSlot1NineHoursReady",
             "DailyRecruitmentSlot1SetNineHours"
         ]
     },
@@ -598,27 +672,24 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_fallback"
+                    "mode": "recruit_fallback",
+                    "slot": 1
                 }
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SetNineHours"
+            "DailyRecruitmentSlot1StartRecruitFallback"
         ]
     },
     "DailyRecruitmentSlot1SetNineHours": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupTime",
+                    "__DailyRecruitmentSlot1CanPrepare"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -632,23 +703,20 @@
         },
         "repeat": 1,
         "repeat_delay": 120,
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot1SelectTag1",
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1NineHoursReady"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot1StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                145,
+                320,
+                85,
+                65
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300
     },
     "DailyRecruitmentSlot1SelectTag1": {
         "recognition": {
@@ -657,7 +725,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 0
+                    "index": 0,
+                    "slot": 1
                 }
             }
         },
@@ -667,23 +736,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot1SelectTag2",
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1SelectTag1Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot1StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot1SelectTag2": {
         "recognition": {
@@ -692,7 +759,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 1
+                    "index": 1,
+                    "slot": 1
                 }
             }
         },
@@ -702,23 +770,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot1SelectTag3",
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1SelectTag2Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot1StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot1SelectTag3": {
         "recognition": {
@@ -727,7 +793,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 2
+                    "index": 2,
+                    "slot": 1
                 }
             }
         },
@@ -737,36 +804,31 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1SelectTag3Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot1StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot1StartRecruitFallback": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot1CanSubmitDecision"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -778,33 +840,31 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot1CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot1StartRecruit": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    390,
-                    1000,
-                    220,
-                    90
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot1CanSubmit"
                 ],
-                "expected": [
-                    "开始招募"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -813,28 +873,42 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot1CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot2Decision": {
         "next": [
             "DailyRecruitmentSlot2SkipLeader",
             "DailyRecruitmentSlot2RecruitGuaranteed",
             "DailyRecruitmentSlot2Refresh",
-            "DailyRecruitmentSlot2RecruitFallback"
+            "DailyRecruitmentSlot2RecruitFallback",
+            "DailyRecruitmentSlot2Decision"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "ready",
+                    "slot": 2
+                }
+            }
+        },
+        "rate_limit": 1000
     },
     "DailyRecruitmentSlot2SkipLeader": {
         "recognition": {
@@ -842,7 +916,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "skip_leader"
+                    "mode": "skip_leader",
+                    "slot": 2
                 }
             }
         },
@@ -855,19 +930,21 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot2CountLeader"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                120,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot2Refresh": {
         "recognition": {
@@ -875,7 +952,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "refresh"
+                    "mode": "refresh",
+                    "slot": 2
                 }
             }
         },
@@ -888,20 +966,23 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot2Decision"
         ],
         "max_hit": 3,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                570,
+                610,
+                70,
+                70
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "rate_limit": 1000,
+        "timeout": 10000
     },
     "DailyRecruitmentSlot2RecruitGuaranteed": {
         "recognition": {
@@ -909,11 +990,13 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_guaranteed"
+                    "mode": "recruit_guaranteed",
+                    "slot": 2
                 }
             }
         },
         "next": [
+            "DailyRecruitmentSlot2NineHoursReady",
             "DailyRecruitmentSlot2SetNineHours"
         ]
     },
@@ -923,27 +1006,24 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_fallback"
+                    "mode": "recruit_fallback",
+                    "slot": 2
                 }
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SetNineHours"
+            "DailyRecruitmentSlot2StartRecruitFallback"
         ]
     },
     "DailyRecruitmentSlot2SetNineHours": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupTime",
+                    "__DailyRecruitmentSlot2CanPrepare"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -957,23 +1037,20 @@
         },
         "repeat": 1,
         "repeat_delay": 120,
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot2SelectTag1",
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2NineHoursReady"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot2StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                145,
+                320,
+                85,
+                65
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300
     },
     "DailyRecruitmentSlot2SelectTag1": {
         "recognition": {
@@ -982,7 +1059,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 0
+                    "index": 0,
+                    "slot": 2
                 }
             }
         },
@@ -992,23 +1070,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot2SelectTag2",
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2SelectTag1Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot2StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot2SelectTag2": {
         "recognition": {
@@ -1017,7 +1093,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 1
+                    "index": 1,
+                    "slot": 2
                 }
             }
         },
@@ -1027,23 +1104,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot2SelectTag3",
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2SelectTag2Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot2StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot2SelectTag3": {
         "recognition": {
@@ -1052,7 +1127,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 2
+                    "index": 2,
+                    "slot": 2
                 }
             }
         },
@@ -1062,36 +1138,31 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2SelectTag3Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot2StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot2StartRecruitFallback": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot2CanSubmitDecision"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1103,33 +1174,31 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot2CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot2StartRecruit": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    390,
-                    1000,
-                    220,
-                    90
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot2CanSubmit"
                 ],
-                "expected": [
-                    "开始招募"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1138,28 +1207,42 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot2CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot3Decision": {
         "next": [
             "DailyRecruitmentSlot3SkipLeader",
             "DailyRecruitmentSlot3RecruitGuaranteed",
             "DailyRecruitmentSlot3Refresh",
-            "DailyRecruitmentSlot3RecruitFallback"
+            "DailyRecruitmentSlot3RecruitFallback",
+            "DailyRecruitmentSlot3Decision"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "ready",
+                    "slot": 3
+                }
+            }
+        },
+        "rate_limit": 1000
     },
     "DailyRecruitmentSlot3SkipLeader": {
         "recognition": {
@@ -1167,7 +1250,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "skip_leader"
+                    "mode": "skip_leader",
+                    "slot": 3
                 }
             }
         },
@@ -1180,19 +1264,21 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot3CountLeader"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                120,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot3Refresh": {
         "recognition": {
@@ -1200,7 +1286,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "refresh"
+                    "mode": "refresh",
+                    "slot": 3
                 }
             }
         },
@@ -1213,20 +1300,23 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot3Decision"
         ],
         "max_hit": 3,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                570,
+                610,
+                70,
+                70
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "rate_limit": 1000,
+        "timeout": 10000
     },
     "DailyRecruitmentSlot3RecruitGuaranteed": {
         "recognition": {
@@ -1234,11 +1324,13 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_guaranteed"
+                    "mode": "recruit_guaranteed",
+                    "slot": 3
                 }
             }
         },
         "next": [
+            "DailyRecruitmentSlot3NineHoursReady",
             "DailyRecruitmentSlot3SetNineHours"
         ]
     },
@@ -1248,27 +1340,24 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_fallback"
+                    "mode": "recruit_fallback",
+                    "slot": 3
                 }
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SetNineHours"
+            "DailyRecruitmentSlot3StartRecruitFallback"
         ]
     },
     "DailyRecruitmentSlot3SetNineHours": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupTime",
+                    "__DailyRecruitmentSlot3CanPrepare"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1282,23 +1371,20 @@
         },
         "repeat": 1,
         "repeat_delay": 120,
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot3SelectTag1",
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3NineHoursReady"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot3StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                145,
+                320,
+                85,
+                65
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300
     },
     "DailyRecruitmentSlot3SelectTag1": {
         "recognition": {
@@ -1307,7 +1393,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 0
+                    "index": 0,
+                    "slot": 3
                 }
             }
         },
@@ -1317,23 +1404,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot3SelectTag2",
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3SelectTag1Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot3StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot3SelectTag2": {
         "recognition": {
@@ -1342,7 +1427,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 1
+                    "index": 1,
+                    "slot": 3
                 }
             }
         },
@@ -1352,23 +1438,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot3SelectTag3",
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3SelectTag2Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot3StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot3SelectTag3": {
         "recognition": {
@@ -1377,7 +1461,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 2
+                    "index": 2,
+                    "slot": 3
                 }
             }
         },
@@ -1387,36 +1472,31 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3SelectTag3Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot3StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot3StartRecruitFallback": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot3CanSubmitDecision"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1428,33 +1508,31 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot3CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot3StartRecruit": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    390,
-                    1000,
-                    220,
-                    90
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot3CanSubmit"
                 ],
-                "expected": [
-                    "开始招募"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1463,28 +1541,42 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot3CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot4Decision": {
         "next": [
             "DailyRecruitmentSlot4SkipLeader",
             "DailyRecruitmentSlot4RecruitGuaranteed",
             "DailyRecruitmentSlot4Refresh",
-            "DailyRecruitmentSlot4RecruitFallback"
+            "DailyRecruitmentSlot4RecruitFallback",
+            "DailyRecruitmentSlot4Decision"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "ready",
+                    "slot": 4
+                }
+            }
+        },
+        "rate_limit": 1000
     },
     "DailyRecruitmentSlot4SkipLeader": {
         "recognition": {
@@ -1492,7 +1584,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "skip_leader"
+                    "mode": "skip_leader",
+                    "slot": 4
                 }
             }
         },
@@ -1505,19 +1598,21 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot4CountLeader"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                120,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot4Refresh": {
         "recognition": {
@@ -1525,7 +1620,8 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "refresh"
+                    "mode": "refresh",
+                    "slot": 4
                 }
             }
         },
@@ -1538,20 +1634,23 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 500,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "DailyRecruitmentSlot4Decision"
         ],
         "max_hit": 3,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                570,
+                610,
+                70,
+                70
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "rate_limit": 1000,
+        "timeout": 10000
     },
     "DailyRecruitmentSlot4RecruitGuaranteed": {
         "recognition": {
@@ -1559,11 +1658,13 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_guaranteed"
+                    "mode": "recruit_guaranteed",
+                    "slot": 4
                 }
             }
         },
         "next": [
+            "DailyRecruitmentSlot4NineHoursReady",
             "DailyRecruitmentSlot4SetNineHours"
         ]
     },
@@ -1573,27 +1674,24 @@
             "param": {
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
-                    "mode": "recruit_fallback"
+                    "mode": "recruit_fallback",
+                    "slot": 4
                 }
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SetNineHours"
+            "DailyRecruitmentSlot4StartRecruitFallback"
         ]
     },
     "DailyRecruitmentSlot4SetNineHours": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupTime",
+                    "__DailyRecruitmentSlot4CanPrepare"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1607,23 +1705,20 @@
         },
         "repeat": 1,
         "repeat_delay": 120,
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot4SelectTag1",
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4NineHoursReady"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot4StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                145,
+                320,
+                85,
+                65
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300
     },
     "DailyRecruitmentSlot4SelectTag1": {
         "recognition": {
@@ -1632,7 +1727,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 0
+                    "index": 0,
+                    "slot": 4
                 }
             }
         },
@@ -1642,23 +1738,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot4SelectTag2",
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4SelectTag1Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot4StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot4SelectTag2": {
         "recognition": {
@@ -1667,7 +1761,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 1
+                    "index": 1,
+                    "slot": 4
                 }
             }
         },
@@ -1677,23 +1772,21 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot4SelectTag3",
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4SelectTag2Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot4StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot4SelectTag3": {
         "recognition": {
@@ -1702,7 +1795,8 @@
                 "custom_recognition": "DailyRecruitDecision",
                 "custom_recognition_param": {
                     "mode": "select_tag",
-                    "index": 2
+                    "index": 2,
+                    "slot": 4
                 }
             }
         },
@@ -1712,36 +1806,31 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4SelectTag3Router"
         ],
-        "on_error": [
-            "DailyRecruitmentSlot4StartRecruitFallback"
-        ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                440,
+                530,
+                165
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "max_hit": 3
     },
     "DailyRecruitmentSlot4StartRecruitFallback": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    80,
-                    160,
-                    560,
-                    240
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot4CanSubmitDecision"
                 ],
-                "expected": [
-                    "招募时间"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1753,33 +1842,31 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot4CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentSlot4StartRecruit": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    390,
-                    1000,
-                    220,
-                    90
+                "all_of": [
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSlot4CanSubmit"
                 ],
-                "expected": [
-                    "开始招募"
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -1788,42 +1875,72 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 900,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentSlot4CountRecruit"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                390,
+                1000,
+                220,
+                90
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 300,
+        "anchor": "TkfmRecruitmentPending"
     },
     "DailyRecruitmentAfterSlots": {
         "next": [
-            "DailyRecruitmentReturnFromOverview"
-        ]
+            "DailyRecruitmentImmediateRecruitAllStart"
+        ],
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentPlanVacancies",
+                "custom_action_param": {}
+            }
+        }
     },
     "DailyRecruitmentImmediateRecruitAllStart": {
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]CommonCloseReward",
-            "DailyRecruitmentImmediateRecruitButton",
-            "DailyRecruitmentImmediateCollectResults",
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentImmediateSlot1Router"
         ],
-        "timeout": 10000
+        "timeout": 15000
     },
     "DailyRecruitmentImmediateRecruitButton": {
+        "next": [
+            "DailyRecruitmentImmediateSlot1Router"
+        ]
+    },
+    "__DailyRecruitmentImmediateRecruitButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyRecruit720.png",
+                "roi": [
+                    368,
+                    290,
+                    235,
+                    705
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentImmediateRecruitConfirm": {
+        "next": [
+            "DailyRecruitmentImmediateSlot1Confirm"
+        ]
+    },
+    "DailyRecruitmentImmediateCollectResults": {
         "recognition": {
             "type": "And",
             "param": {
                 "all_of": [
-                    "__DailyRecruitmentOverviewTitle",
-                    "__DailyRecruitmentImmediateRecruitButton"
+                    "__DailyRecruitmentBatchReady",
+                    "__DailyRecruitmentCollectAllButton"
                 ],
                 "box_index": 1
             }
@@ -1834,119 +1951,35 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
+        "next": [
+            "DailyRecruitmentImmediateResultRouter"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
             "target": [
-                0,
-                0,
-                0,
-                0
-            ]
+                265,
+                1025,
+                190,
+                46
+            ],
+            "timeout": 1200
         },
-        "next": [
-            "DailyRecruitmentImmediateRecruitConfirm",
-            "DailyRecruitmentImmediateRecruitAllStart"
-        ],
-        "max_hit": 8,
-        "pre_wait_freezes": 300
-    },
-    "__DailyRecruitmentImmediateRecruitButton": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [
-                    360,
-                    210,
-                    330,
-                    820
-                ],
-                "expected": [
-                    "立即招募",
-                    "紧急征召"
-                ]
-            }
-        }
-    },
-    "DailyRecruitmentImmediateRecruitConfirm": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [
-                    380,
-                    720,
-                    260,
-                    180
-                ],
-                "expected": [
-                    "确认",
-                    "确定"
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
-        "post_wait_freezes": {
-            "time": 1000,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentImmediateRecruitAllStart"
-        ],
-        "pre_wait_freezes": 300
-    },
-    "DailyRecruitmentImmediateCollectResults": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [
-                    248,
-                    1016,
-                    218,
-                    63
-                ],
-                "expected": [
-                    "一键录取"
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
-        "next": [
-            "DailyRecruitmentImmediateCollectSkip",
-            "DailyRecruitmentImmediateCollectClose"
-        ],
-        "on_error": [
-            "DailyRecruitmentImmediateCollectCloseFallback"
-        ],
-        "pre_wait_freezes": 300
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 1
     },
     "DailyRecruitmentImmediateCollectSkip": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
+                "template": "DailyRecruitment/RecruitSkip720.png",
                 "roi": [
-                    511,
-                    37,
-                    142,
-                    80
+                    515,
+                    35,
+                    135,
+                    83
                 ],
-                "expected": [
-                    "SKIP"
-                ]
+                "threshold": 0.82
             }
         },
         "action": {
@@ -1956,28 +1989,21 @@
             }
         },
         "next": [
-            "DailyRecruitmentImmediateCollectClose"
+            "DailyRecruitmentImmediateResultRouter"
         ],
-        "on_error": [
-            "DailyRecruitmentImmediateCollectCloseFallback"
-        ],
-        "pre_wait_freezes": 300
+        "post_delay": 200,
+        "max_hit": 6,
+        "timeout": 20000
     },
     "DailyRecruitmentImmediateCollectClose": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [
-                    250,
-                    1150,
-                    240,
-                    95
+                "all_of": [
+                    "__DailyRecruitmentResultTitle",
+                    "__DailyRecruitmentResultClose"
                 ],
-                "expected": [
-                    "确定",
-                    "确认",
-                    "关闭"
-                ]
+                "box_index": 1
             }
         },
         "action": {
@@ -1987,26 +2013,27 @@
             }
         },
         "next": [
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentImmediateCollectReturnRouter"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                265,
+                1180,
+                190,
+                46
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 3
     },
     "DailyRecruitmentImmediateCollectCloseFallback": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    360,
-                    1200
-                ]
-            }
-        },
         "next": [
-            "DailyRecruitmentCycleRouter"
-        ]
+            "DailyRecruitmentImmediateResultRouter"
+        ],
+        "timeout": 20000
     },
     "DailyRecruitmentReturnFromOverview": {
         "recognition": {
@@ -2035,7 +2062,16 @@
         "next": [
             "DailyRecruitmentDone"
         ],
-        "pre_wait_freezes": 300,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                0,
+                50,
+                120,
+                48
+            ],
+            "timeout": 1200
+        },
         "max_hit": 3,
         "post_wait_freezes": 0
     },
@@ -2125,6 +2161,1870 @@
                     "紧急征召",
                     "立即招募"
                 ]
+            }
+        }
+    },
+    "__DailyRecruitmentBlockingPrompt": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "提示",
+                    "确认",
+                    "確認",
+                    "警告"
+                ],
+                "roi": [
+                    240,
+                    400,
+                    240,
+                    230
+                ]
+            }
+        }
+    },
+    "__DailyRecruitmentNoBlockingPrompt": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitNoBlockingPrompt"
+            }
+        }
+    },
+    "__DailyRecruitmentSetupTime": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "招募时间",
+                    "招募時間",
+                    "^时间$",
+                    "^時間$"
+                ],
+                "roi": [
+                    0,
+                    150,
+                    300,
+                    100
+                ]
+            }
+        }
+    },
+    "__DailyRecruitmentSetupStart": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始招募"
+                ],
+                "roi": [
+                    390,
+                    1000,
+                    220,
+                    90
+                ]
+            }
+        }
+    },
+    "__DailyRecruitmentSetupCancel": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "取消"
+                ],
+                "roi": [
+                    120,
+                    1000,
+                    220,
+                    90
+                ]
+            }
+        }
+    },
+    "__DailyRecruitmentSetupReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentSetupTime",
+                    "__DailyRecruitmentSetupStart",
+                    "__DailyRecruitmentSetupCancel"
+                ],
+                "box_index": 0
+            }
+        }
+    },
+    "__DailyRecruitmentSlot1CanSubmit": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot1CanSubmitDecision"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "__DailyRecruitmentSlot2CanSubmit": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot2CanSubmitDecision"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "__DailyRecruitmentSlot3CanSubmit": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot3CanSubmitDecision"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "__DailyRecruitmentSlot4CanSubmit": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot4CanSubmitDecision"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "DailyRecruitmentCycleCompleted": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "collected"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentFinishBatch",
+                "custom_action_param": {}
+            }
+        },
+        "next": [
+            "DailyRecruitmentCycleRouter"
+        ],
+        "rate_limit": 500
+    },
+    "__DailyRecruitmentCollectAllButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/CollectAll720.png",
+                "roi": [
+                    250,
+                    1016,
+                    220,
+                    65
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentResultTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/ResultTitle720.png",
+                "roi": [
+                    150,
+                    20,
+                    420,
+                    105
+                ],
+                "threshold": 0.8
+            }
+        }
+    },
+    "__DailyRecruitmentResultClose": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/ResultClose720.png",
+                "roi": [
+                    248,
+                    1160,
+                    220,
+                    85
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentEmergencyPrompt": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyPrompt720.png",
+                "roi": [
+                    158,
+                    644,
+                    410,
+                    65
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentEmergencyConfirm": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyConfirmButton720.png",
+                "roi": [
+                    382,
+                    748,
+                    220,
+                    75
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentBatchReady": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "batch_ready"
+                }
+            }
+        }
+    },
+    "__DailyRecruitmentSlot1Ready": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/RecruitReady720.png",
+                "roi": [
+                    285,
+                    294,
+                    155,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot1EmptyVisual": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmptySlot720.png",
+                "roi": [
+                    290,
+                    280,
+                    145,
+                    60
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot1Emergency": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyRecruit720.png",
+                "roi": [
+                    368,
+                    294,
+                    235,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentImmediateSlot1Router": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot1Ready",
+            "DailyRecruitmentImmediateSlot1RecruitButton"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateSlot1Ready": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "slot_settled",
+                    "slot": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentImmediateSlot2Router"
+        ],
+        "rate_limit": 500
+    },
+    "DailyRecruitmentImmediateSlot1RecruitButton": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentOverviewTitle",
+                    "__DailyRecruitmentSlot1Emergency",
+                    "__DailyRecruitmentSlot1CanAccelerate"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot1Confirm",
+            "DailyRecruitmentImmediateSlot1Ready"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                375,
+                294,
+                220,
+                58
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 1
+    },
+    "DailyRecruitmentImmediateSlot1Confirm": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentEmergencyPrompt",
+                    "__DailyRecruitmentEmergencyConfirm"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true,
+                "target_offset": [
+                    80,
+                    18,
+                    -160,
+                    -36
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot1Ready",
+            "DailyRecruitmentImmediateSlot1Confirm"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "timeout": 15000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第1栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+        }
+    },
+    "__DailyRecruitmentSlot2Ready": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/RecruitReady720.png",
+                "roi": [
+                    285,
+                    506,
+                    155,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot2EmptyVisual": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmptySlot720.png",
+                "roi": [
+                    290,
+                    492,
+                    145,
+                    60
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot2Emergency": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyRecruit720.png",
+                "roi": [
+                    368,
+                    506,
+                    235,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentImmediateSlot2Router": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot2Ready",
+            "DailyRecruitmentImmediateSlot2RecruitButton"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateSlot2Ready": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "slot_settled",
+                    "slot": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentImmediateSlot3Router"
+        ],
+        "rate_limit": 500
+    },
+    "DailyRecruitmentImmediateSlot2RecruitButton": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentOverviewTitle",
+                    "__DailyRecruitmentSlot2Emergency",
+                    "__DailyRecruitmentSlot2CanAccelerate"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot2Confirm",
+            "DailyRecruitmentImmediateSlot2Ready"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                375,
+                506,
+                220,
+                58
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 1
+    },
+    "DailyRecruitmentImmediateSlot2Confirm": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentEmergencyPrompt",
+                    "__DailyRecruitmentEmergencyConfirm"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true,
+                "target_offset": [
+                    80,
+                    18,
+                    -160,
+                    -36
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot2Ready",
+            "DailyRecruitmentImmediateSlot2Confirm"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "timeout": 15000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第2栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+        }
+    },
+    "__DailyRecruitmentSlot3Ready": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/RecruitReady720.png",
+                "roi": [
+                    285,
+                    718,
+                    155,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot3EmptyVisual": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmptySlot720.png",
+                "roi": [
+                    290,
+                    704,
+                    145,
+                    60
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot3Emergency": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyRecruit720.png",
+                "roi": [
+                    368,
+                    718,
+                    235,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentImmediateSlot3Router": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot3Ready",
+            "DailyRecruitmentImmediateSlot3RecruitButton"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateSlot3Ready": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "slot_settled",
+                    "slot": 3
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentImmediateSlot4Router"
+        ],
+        "rate_limit": 500
+    },
+    "DailyRecruitmentImmediateSlot3RecruitButton": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentOverviewTitle",
+                    "__DailyRecruitmentSlot3Emergency",
+                    "__DailyRecruitmentSlot3CanAccelerate"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot3Confirm",
+            "DailyRecruitmentImmediateSlot3Ready"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                375,
+                718,
+                220,
+                58
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 1
+    },
+    "DailyRecruitmentImmediateSlot3Confirm": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentEmergencyPrompt",
+                    "__DailyRecruitmentEmergencyConfirm"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true,
+                "target_offset": [
+                    80,
+                    18,
+                    -160,
+                    -36
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot3Ready",
+            "DailyRecruitmentImmediateSlot3Confirm"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "timeout": 15000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第3栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+        }
+    },
+    "__DailyRecruitmentSlot4Ready": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/RecruitReady720.png",
+                "roi": [
+                    285,
+                    930,
+                    155,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot4EmptyVisual": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmptySlot720.png",
+                "roi": [
+                    290,
+                    916,
+                    145,
+                    60
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "__DailyRecruitmentSlot4Emergency": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/EmergencyRecruit720.png",
+                "roi": [
+                    368,
+                    930,
+                    235,
+                    58
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentImmediateSlot4Router": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot4Ready",
+            "DailyRecruitmentImmediateSlot4RecruitButton"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateSlot4Ready": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "slot_settled",
+                    "slot": 4
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentImmediateBatchRouter"
+        ],
+        "rate_limit": 500
+    },
+    "DailyRecruitmentImmediateSlot4RecruitButton": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentNoBlockingPrompt",
+                    "__DailyRecruitmentOverviewTitle",
+                    "__DailyRecruitmentSlot4Emergency",
+                    "__DailyRecruitmentSlot4CanAccelerate"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot4Confirm",
+            "DailyRecruitmentImmediateSlot4Ready"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                375,
+                930,
+                220,
+                58
+            ],
+            "timeout": 1200
+        },
+        "post_delay": 200,
+        "timeout": 15000,
+        "max_hit": 1
+    },
+    "DailyRecruitmentImmediateSlot4Confirm": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentEmergencyPrompt",
+                    "__DailyRecruitmentEmergencyConfirm"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true,
+                "target_offset": [
+                    80,
+                    18,
+                    -160,
+                    -36
+                ]
+            }
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateSlot4Ready",
+            "DailyRecruitmentImmediateSlot4Confirm"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1200
+        },
+        "post_delay": 1000,
+        "timeout": 15000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第4栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+        }
+    },
+    "DailyRecruitmentImmediateBatchRouter": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentImmediateCollectResults",
+            "DailyRecruitmentBudgetFinished",
+            "DailyRecruitmentImmediateAllSkipped"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateAllSkipped": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "all_skipped"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentReturnFromOverview"
+        ],
+        "rate_limit": 500
+    },
+    "DailyRecruitmentImmediateResultRouter": {
+        "next": [
+            "DailyRecruitmentImmediateCollectSkip",
+            "DailyRecruitmentImmediateCollectClose"
+        ],
+        "timeout": 20000
+    },
+    "DailyRecruitmentCollectResultRouter": {
+        "next": [
+            "DailyRecruitmentCollectSkip",
+            "DailyRecruitmentCollectClose"
+        ],
+        "timeout": 20000
+    },
+    "DailyRecruitmentCollectReturned": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "entry_collected"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentCollectResumeCycle",
+            "DailyRecruitmentCycleRouter"
+        ],
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentFinishBatch",
+                "custom_action_param": {}
+            }
+        }
+    },
+    "DailyRecruitmentCollectReturnRouter": {
+        "next": [
+            "DailyRecruitmentCollectSkip",
+            "DailyRecruitmentCollectClose",
+            "DailyRecruitmentCollectReturned"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentImmediateCollectReturnRouter": {
+        "next": [
+            "DailyRecruitmentImmediateCollectSkip",
+            "DailyRecruitmentImmediateCollectClose",
+            "DailyRecruitmentCycleCompleted"
+        ],
+        "timeout": 15000
+    },
+    "DailyRecruitmentCollectResumeCycle": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitBatchState",
+                "custom_recognition_param": {
+                    "mode": "cycle_active"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ]
+    },
+    "__DailyRecruitmentTag1Selected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/SelectedTagEdge720.png",
+                "roi": [
+                    116,
+                    463,
+                    149,
+                    51
+                ],
+                "threshold": 0.9,
+                "method": 10001
+            }
+        }
+    },
+    "__DailyRecruitmentTag2Selected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/SelectedTagEdge720.png",
+                "roi": [
+                    283,
+                    462,
+                    156,
+                    54
+                ],
+                "threshold": 0.9,
+                "method": 10001
+            }
+        }
+    },
+    "__DailyRecruitmentTag3Selected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/SelectedTagEdge720.png",
+                "roi": [
+                    453,
+                    466,
+                    153,
+                    47
+                ],
+                "threshold": 0.9,
+                "method": 10001
+            }
+        }
+    },
+    "__DailyRecruitmentTag4Selected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/SelectedTagEdge720.png",
+                "roi": [
+                    113,
+                    533,
+                    160,
+                    54
+                ],
+                "threshold": 0.9,
+                "method": 10001
+            }
+        }
+    },
+    "__DailyRecruitmentTag5Selected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/SelectedTagEdge720.png",
+                "roi": [
+                    284,
+                    538,
+                    156,
+                    53
+                ],
+                "threshold": 0.9,
+                "method": 10001
+            }
+        }
+    },
+    "__DailyRecruitmentSlot1CanPrepare": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "prepare",
+                    "slot": 1
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot1SelectionComplete": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "selection_complete",
+                    "slot": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot1StartRecruit"
+        ]
+    },
+    "DailyRecruitmentSlot1SelectTag1Router": {
+        "next": [
+            "DailyRecruitmentSlot1SelectionComplete",
+            "DailyRecruitmentSlot1SelectTag1Done",
+            "DailyRecruitmentSlot1SelectTag1"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot1SelectTag1Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 1,
+                    "index": 0
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot1SelectTag2Router"
+        ]
+    },
+    "DailyRecruitmentSlot1SelectTag2Router": {
+        "next": [
+            "DailyRecruitmentSlot1SelectionComplete",
+            "DailyRecruitmentSlot1SelectTag2Done",
+            "DailyRecruitmentSlot1SelectTag2"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot1SelectTag2Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 1,
+                    "index": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot1SelectTag3Router"
+        ]
+    },
+    "DailyRecruitmentSlot1SelectTag3Router": {
+        "next": [
+            "DailyRecruitmentSlot1SelectionComplete",
+            "DailyRecruitmentSlot1SelectTag3Done",
+            "DailyRecruitmentSlot1SelectTag3"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot1SelectTag3Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 1,
+                    "index": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot1StartRecruit"
+        ]
+    },
+    "__DailyRecruitmentSlot2CanPrepare": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "prepare",
+                    "slot": 2
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot2SelectionComplete": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "selection_complete",
+                    "slot": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot2StartRecruit"
+        ]
+    },
+    "DailyRecruitmentSlot2SelectTag1Router": {
+        "next": [
+            "DailyRecruitmentSlot2SelectionComplete",
+            "DailyRecruitmentSlot2SelectTag1Done",
+            "DailyRecruitmentSlot2SelectTag1"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot2SelectTag1Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 2,
+                    "index": 0
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot2SelectTag2Router"
+        ]
+    },
+    "DailyRecruitmentSlot2SelectTag2Router": {
+        "next": [
+            "DailyRecruitmentSlot2SelectionComplete",
+            "DailyRecruitmentSlot2SelectTag2Done",
+            "DailyRecruitmentSlot2SelectTag2"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot2SelectTag2Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 2,
+                    "index": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot2SelectTag3Router"
+        ]
+    },
+    "DailyRecruitmentSlot2SelectTag3Router": {
+        "next": [
+            "DailyRecruitmentSlot2SelectionComplete",
+            "DailyRecruitmentSlot2SelectTag3Done",
+            "DailyRecruitmentSlot2SelectTag3"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot2SelectTag3Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 2,
+                    "index": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot2StartRecruit"
+        ]
+    },
+    "__DailyRecruitmentSlot3CanPrepare": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "prepare",
+                    "slot": 3
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot3SelectionComplete": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "selection_complete",
+                    "slot": 3
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot3StartRecruit"
+        ]
+    },
+    "DailyRecruitmentSlot3SelectTag1Router": {
+        "next": [
+            "DailyRecruitmentSlot3SelectionComplete",
+            "DailyRecruitmentSlot3SelectTag1Done",
+            "DailyRecruitmentSlot3SelectTag1"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot3SelectTag1Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 3,
+                    "index": 0
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot3SelectTag2Router"
+        ]
+    },
+    "DailyRecruitmentSlot3SelectTag2Router": {
+        "next": [
+            "DailyRecruitmentSlot3SelectionComplete",
+            "DailyRecruitmentSlot3SelectTag2Done",
+            "DailyRecruitmentSlot3SelectTag2"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot3SelectTag2Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 3,
+                    "index": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot3SelectTag3Router"
+        ]
+    },
+    "DailyRecruitmentSlot3SelectTag3Router": {
+        "next": [
+            "DailyRecruitmentSlot3SelectionComplete",
+            "DailyRecruitmentSlot3SelectTag3Done",
+            "DailyRecruitmentSlot3SelectTag3"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot3SelectTag3Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 3,
+                    "index": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot3StartRecruit"
+        ]
+    },
+    "__DailyRecruitmentSlot4CanPrepare": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "prepare",
+                    "slot": 4
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot4SelectionComplete": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "selection_complete",
+                    "slot": 4
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot4StartRecruit"
+        ]
+    },
+    "DailyRecruitmentSlot4SelectTag1Router": {
+        "next": [
+            "DailyRecruitmentSlot4SelectionComplete",
+            "DailyRecruitmentSlot4SelectTag1Done",
+            "DailyRecruitmentSlot4SelectTag1"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot4SelectTag1Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 4,
+                    "index": 0
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot4SelectTag2Router"
+        ]
+    },
+    "DailyRecruitmentSlot4SelectTag2Router": {
+        "next": [
+            "DailyRecruitmentSlot4SelectionComplete",
+            "DailyRecruitmentSlot4SelectTag2Done",
+            "DailyRecruitmentSlot4SelectTag2"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot4SelectTag2Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 4,
+                    "index": 1
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot4SelectTag3Router"
+        ]
+    },
+    "DailyRecruitmentSlot4SelectTag3Router": {
+        "next": [
+            "DailyRecruitmentSlot4SelectionComplete",
+            "DailyRecruitmentSlot4SelectTag3Done",
+            "DailyRecruitmentSlot4SelectTag3"
+        ],
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot4SelectTag3Done": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "tag_selected",
+                    "slot": 4,
+                    "index": 2
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot4StartRecruit"
+        ]
+    },
+    "__DailyRecruitmentSetupNineHours": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyRecruitment/NineHours720.png",
+                "roi": [
+                    142,
+                    270,
+                    100,
+                    65
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "DailyRecruitmentSlot1NineHoursReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot1CanPrepare"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot1SelectTag1Router"
+        ]
+    },
+    "__DailyRecruitmentSlot1CanSubmitDecision": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "submit",
+                    "slot": 1
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot2NineHoursReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot2CanPrepare"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot2SelectTag1Router"
+        ]
+    },
+    "__DailyRecruitmentSlot2CanSubmitDecision": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "submit",
+                    "slot": 2
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot3NineHoursReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot3CanPrepare"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot3SelectTag1Router"
+        ]
+    },
+    "__DailyRecruitmentSlot3CanSubmitDecision": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "submit",
+                    "slot": 3
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot4NineHoursReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyRecruitmentSetupNineHours",
+                    "__DailyRecruitmentSlot4CanPrepare"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyRecruitmentSlot4SelectTag1Router"
+        ]
+    },
+    "__DailyRecruitmentSlot4CanSubmitDecision": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitDecision",
+                "custom_recognition_param": {
+                    "mode": "submit",
+                    "slot": 4
+                }
+            }
+        }
+    },
+    "DailyRecruitmentBudgetConfig": {
+        "attach": {
+            "total": 4
+        }
+    },
+    "DailyRecruitmentBudgetFinished": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "finished"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentReturnFromOverview"
+        ],
+        "rate_limit": 500,
+        "focus": {
+            "Node.Action.Succeeded": "征才总次数已用尽，最后一次保留自然倒计时，返回主页"
+        }
+    },
+    "__DailyRecruitmentSlot1CanOpen": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_open",
+                    "slot": 1
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot1CountRecruit": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "started",
+                    "slot": 1
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 1,
+                    "outcome": "Recruit"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot1CountLeader": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "leader_skipped",
+                    "slot": 1
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 1,
+                    "outcome": "Leader"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "__DailyRecruitmentSlot1CanAccelerate": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_accelerate",
+                    "slot": 1
+                }
+            }
+        }
+    },
+    "__DailyRecruitmentSlot2CanOpen": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_open",
+                    "slot": 2
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot2CountRecruit": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "started",
+                    "slot": 2
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 2,
+                    "outcome": "Recruit"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot2CountLeader": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "leader_skipped",
+                    "slot": 2
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 2,
+                    "outcome": "Leader"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "__DailyRecruitmentSlot2CanAccelerate": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_accelerate",
+                    "slot": 2
+                }
+            }
+        }
+    },
+    "__DailyRecruitmentSlot3CanOpen": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_open",
+                    "slot": 3
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot3CountRecruit": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "started",
+                    "slot": 3
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 3,
+                    "outcome": "Recruit"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot3CountLeader": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "leader_skipped",
+                    "slot": 3
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 3,
+                    "outcome": "Leader"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "__DailyRecruitmentSlot3CanAccelerate": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_accelerate",
+                    "slot": 3
+                }
+            }
+        }
+    },
+    "__DailyRecruitmentSlot4CanOpen": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_open",
+                    "slot": 4
+                }
+            }
+        }
+    },
+    "DailyRecruitmentSlot4CountRecruit": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "started",
+                    "slot": 4
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 4,
+                    "outcome": "Recruit"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "DailyRecruitmentSlot4CountLeader": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "leader_skipped",
+                    "slot": 4
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyRecruitmentRecordAttempt",
+                "custom_action_param": {
+                    "slot": 4,
+                    "outcome": "Leader"
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentOverviewRouter"
+        ],
+        "rate_limit": 1000,
+        "timeout": 10000
+    },
+    "__DailyRecruitmentSlot4CanAccelerate": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyRecruitmentBudgetState",
+                "custom_recognition_param": {
+                    "mode": "can_accelerate",
+                    "slot": 4
+                }
             }
         }
     }

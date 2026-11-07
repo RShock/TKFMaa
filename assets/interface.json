@@ -99,12 +99,12 @@
             "name": "全境征才",
             "entry": "DailyRecruitmentStart",
             "option": [
-                "全境征才立即招募"
+                "全境征才循环次数"
             ],
             "doc": [
                 "从主界面进入召唤页的全境征才，固定扫描四个栏位。",
-                "出现领袖词条时跳过该栏位；有保底 2 星组合时调为 9 小时后招募；没有保底且仍有刷新次数时先刷新。",
-                "可选在四个栏位处理完成后，先自动点击全部立即招募/紧急征召，再统一一键录取结果后退出。"
+                "出现领袖词条时跳过该栏位；有保底 2 星组合时调为 9 小时后招募并选择词条；没有保底且仍有刷新次数时先刷新，刷新次数或本栏动作额度用尽后直接使用默认 1 小时招募，不选择词条。",
+                "总次数按栏位计数：成功开始征才或领袖跳过各计1次。至多4次不加速；多于4次只加速需要腾出的栏位，达到次数后其余招募自然倒计时。已有招募和结果不重复计数，领袖栏位本次任务不重复打开。"
             ]
         },
         {
@@ -2847,53 +2847,26 @@
                 }
             ]
         },
-        "全境征才立即招募": {
-            "type": "switch",
-            "default_case": "No",
-            "cases": [
-                {
-                    "name": "Yes",
-                    "description": "四个栏位处理完成后，先依次点击所有可见的立即招募/紧急征召，再一键录取结果；循环次数用尽后返回主界面。",
-                    "option": [
-                        "全境征才循环次数"
-                    ],
-                    "pipeline_override": {
-                        "DailyRecruitmentAfterSlots": {
-                            "next": [
-                                "DailyRecruitmentImmediateRecruitAllStart"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "No",
-                    "description": "保持原流程：四个栏位处理完成后直接返回主界面。",
-                    "pipeline_override": {
-                        "DailyRecruitmentAfterSlots": {
-                            "next": [
-                                "DailyRecruitmentReturnFromOverview"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
         "全境征才循环次数": {
             "type": "input",
             "inputs": [
                 {
                     "name": "次数",
                     "pipeline_type": "int",
-                    "default": "1",
+                    "default": "4",
                     "verify": "^[1-9][0-9]?$|^100$",
                     "pattern_msg": "请输入 1-100 的整数"
                 }
             ],
             "pipeline_override": {
-                "DailyRecruitmentCycleGate": {
-                    "max_hit": "{次数}"
+                "DailyRecruitmentBudgetConfig": {
+                    "attach": {
+                        "total": "{次数}"
+                    }
                 }
-            }
+            },
+            "label": "全境征才总次数",
+            "description": "处理栏位总次数（1–100），不是四栏轮数。开始征才或领袖跳过各计1次。至多4次不加速，已有占用栏位时只处理可用空栏；多于4次自动按需要加速，最后最多四栏自然倒计时。"
         },
         "调教目标": {
             "type": "select",

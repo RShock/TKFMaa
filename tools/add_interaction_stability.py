@@ -9,6 +9,7 @@ PRE_WAIT_FREEZES_MS = 300
 # These controls only exist during an animation or intentionally operate on a moving screen.
 EXEMPT_NODES = {
     "DailyRecruitmentCollectSkip": "skip button is only available during the recruitment animation",
+    "DailyRecruitmentImmediateCollectSkip": "skip button is only available during the recruitment animation",
     "DailyStaminaSkipSweepAnimationLower": "skip button is only available during the sweep animation",
     "DailyStaminaSkipSweepAnimationUpper": "skip button is only available during the sweep animation",
     "GameTapTitleScreen": "title screen background is continuously animated",
