@@ -101,3 +101,7 @@
 - 配置每日定时复用MFAAvalonia 2.16.2原生TimerModel，在开始任务右侧设置多个每天固定时间，运行当时勾选的全部任务。启用时按实例绑定且不强制中断当前队列，离线不补跑。
 - 实现与边界见公开任务文档daily_dispatch.md、daily_schedule.md及assets/resource/custom/doc.md；修改后重启开发界面，不自动执行任务。
 
+## 开发配置迁移
+
+- `tools/run_dev.ps1` 正常关闭前端后备份运行界面和待迁移实例配置，再调用 `tools/migrate_runtime_options.py`。迁移移除启动任务和立即开关，保留服务器、各征才步骤次数及其他用户设置；标记版本后重复启动不再覆盖选择。
+- 迁移失败不启动前端；旧前端不能正常退出时不改运行配置、不强杀。备份位于 `install/backup/dev-run-*/`。
