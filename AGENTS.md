@@ -1,5 +1,13 @@
 # Repository Guidelines
 
+后续功能改造同时遵循 [agent.md](agent.md) 的图片识别优先约定。
+
+默认遵循 `agent.md` 的“大胆编程”：用户未主动、明确要求测试时，直接按合理假设修改代码，跳过本文测试与校验要求，不以测试或逐项确认为实施前置步骤；仍生成必要配置并启动开发版，不自动执行任务。用户明确指定“自信开发”时，先用 ADB 观察实际流程再编码；人工流程观察不能作为新增代码已验证的结论。
+
+前端资源扩展位于 `assets/resource/custom/`，维护前先阅读该目录的 `doc.md`。当前复用 MFAAvalonia 2.16.2 的 C# 动态加载器；修改后通过开发启动脚本重新加载，不直接修改前端 EXE。图片匹配优先复用 MaaFramework 内置能力或成熟第三方实现，不能把阈值分数当作实测准确率。
+
+截图素材通过 ADB 或 Maa 控制器采集设备内部画面，并按 `assets/interface.json` 的 `display_short_side: 720` 统一到 720x1280 后裁剪；不要使用桌面中随窗口大小变化的截图制作模板。保持统一的设备截图与匹配基准，电脑窗口大小不参与坐标换算。
+
 ## 项目结构与模块组织
 
 本仓库是基于 MaaFramework 的自动化助手。Python 自定义动作逻辑位于 `agent/`，其中 `agent/main.py` 负责注册处理器并启动 Maa Agent 服务。声明式自动化流程位于 `assets/resource/pipeline/`，识别模板应放入 `assets/resource/image/` 下对应的功能目录。面向用户的任务与选项在 `assets/interface.json` 中声明。通用 OCR 模型来自 MaaCommonAssets；当前提交仅保留 `.gitmodules` 声明、缺少 gitlink，模型来源由 `tools/ocr_model.json` 固定，通过 `tools/configure.py --download` 恢复，详情见开发环境文档。构建、Schema 校验和数据生成脚本位于 `tools/`，贡献者文档位于 `docs/zh_cn/develop/`，统一任务流程位于 `docs/zh_cn/tasks/`，实机验证与调试记录位于 `docs/zh_cn/records/`。公开文档总入口为 `docs/zh_cn/README.md`。目前没有独立的单元测试目录。
@@ -30,8 +38,11 @@ Windows 本地开发环境使用 `.venv312/`，VS Code 默认解释器和终端�
 - `python tools/build_stamina_activities.py`：修改 `assets/stamina/active.yaml` 后重新生成体力活动配置。
 - `python tools/build_stamina_activities.py --check`：只检查体力活动配置与 `assets/interface.json` 是否同步，不写文件。
 - `python tools/add_interaction_stability.py --check`：检查带识别结果的交互动作是否配置点击前稳定等待。
+- `pwsh -File tools/run_dev.ps1`：使用已准备的 `install/` 前端及 native runtime 和 `.venv312/` 启动开发版，直接加载源码资源和 Agent；要求 PowerShell 7.4 及以上，不重新打包或修改 EXE。
 
-`.github/workflows/install.yml` 会为 `v1.2.3` 等版本标签构建发布包。普通分支推送命中构建路径规则时生成带前端的 Artifact，前端验收须使用对应提交的完整包，步骤见开发环境文档。本地打包需要预先下载 MaaFramework 运行时，不属于常规开发验证流程。
+每次修改代码或运行资源后，必须执行 `pwsh -File tools/run_dev.ps1`，让用户在最新开发版中检查改动。脚本先正常关闭同一目录的旧前端、备份运行界面配置；需要迁移时先备份实例 JSON 并通过 `tools/migrate_runtime_options.py` 保留旧选项，再生成直接指向 `assets/resource/` 和 `agent/main.py` 的开发配置并启动现有 EXE；不自动执行任务。任务仍在运行、依赖缺失或正常关闭失败时，不强制结束进程，明确报告未完成启动的原因。用户要求自行实测时，只启动界面，不代为运行测试或购买。
+
+`.github/workflows/install.yml` 会为 `v1.2.3` 等版本标签构建发布包。普通分支推送命中构建路径规则时生成带前端的 Artifact，发布包验收须使用对应提交的完整包；本地修改使用上述开发启动命令检查。两者均不代替实机验证。本地打包需要预先下载 MaaFramework 运行时，不属于常规开发验证流程。
 
 ## 生成配置与派生产物
 
@@ -52,7 +63,8 @@ Windows 本地开发环境使用 `.venv312/`，VS Code 默认解释器和终端�
 - 跨页面流程优先用 `next` 与 `[JumpBack]` 组成 JSON 状态机。只有复杂运行时计算或 Pipeline 难以表达的识别决策才放入 `agent/`，不要用 Python `for`/`while` 串行调用任务来模拟页面状态机。
 - 不滥用 `pre_delay`、`post_delay` 和长 `timeout`。确需等待动画或加载稳定时使用 `pre_wait_freezes`/`post_wait_freezes`，动作后仍须识别目标状态。
 - 带明确识别结果的 `Click`、`Swipe`、`LongPress` 等交互动作默认配置 `pre_wait_freezes: 300`，确认识别区域连续稳定后再操作。只在控件仅短暂出现或页面持续动画时豁免，并在 `tools/add_interaction_stability.py` 中记录原因。
-- 坐标、ROI 和模板统一基于 720x1280 竖屏基准。ROI 应尽量缩小但完整包围目标；OCR 的 `expected` 优先填写完整界面文本，需要兼容误识别时显式列出变体。OCR 不稳定时先调整 ROI 并多次验证，不要立即改用图片匹配。
+- 后续新增或改造识别逻辑时，尽可能优先使用 `TemplateMatch` 图片识别；用户明确指定 OCR，或动态文字和安全复核缺少可靠模板时保留 OCR，并在任务文档注明用途。
+- 坐标、ROI 和模板统一基于 720x1280 竖屏基准。ROI 应尽量缩小但完整包围目标；使用 OCR 时，`expected` 优先填写完整界面文本，需要兼容误识别时显式列出变体。
 - 新增 TemplateMatch 素材时使用无损原图裁剪，路径相对 `assets/resource/image/`。提交前检查图片、节点引用及大小写完全一致。
 
 ## 任务开发流程
@@ -93,7 +105,7 @@ Windows 本地开发环境使用 `.venv312/`，VS Code 默认解释器和终端�
 
 ## 测试规范
 
-`maa-tools check` 与 JSON Schema 校验均为必做检查。修改识别或动作逻辑后，还应在当前开发环境中运行受影响任务；本地提供 MaaMCP 时优先使用其多文件 `run_pipeline` 完成设备集成测试，并记录相关日志、截图或修改前后行为。坐标、ROI 和模板须遵循 MaaFramework 的 720p 基准。不要提交运行日志、调试截图、缓存或下载的大型模型文件。
+仅在用户主动、明确要求测试时执行本节；未要求时遵循 `agent.md` 的“大胆编程”，不执行任何测试或校验步骤。启用测试后，`maa-tools check` 与 JSON Schema 校验均为必做检查。修改识别或动作逻辑后，还应在当前开发环境中运行受影响任务；本地提供 MaaMCP 时优先使用其多文件 `run_pipeline` 完成设备集成测试，并记录相关日志、截图或修改前后行为。坐标、ROI 和模板须遵循 MaaFramework 的 720p 基准。不要提交运行日志、调试截图、缓存或下载的大型模型文件。
 
 ## 提交与 Pull Request 规范
 
@@ -109,6 +121,7 @@ Windows 本地开发环境使用 `.venv312/`，VS Code 默认解释器和终端�
 
 ## 版本控制安全
 
+- 本魔改工作区维护 `RShock/TKFMaa`：`origin` 指向个人 Fork，`upstream` 保留原仓库用于查阅并禁用推送；默认不合并、同步上游或向上游创建 PR。提交与推送仍按当前对话中的明确授权执行。
 - 未经用户在当前对话中明确要求，不得执行 `git add`、`git commit`、`git push`、创建或删除分支、打标签、创建 PR 或触发发布；默认将修改保留在工作区供用户检查。
 - 不得把“完成修改”“提交代码”等模糊表述自行解释为允许推送、打标签或发布；每类远程操作都需要明确指令。
 - 用户要求提交时，先检查 `git status` 和目标文件差异，只暂存本次任务相关路径，不使用 `git add .`，不夹带用户已有修改、日志、缓存或生成产物。
