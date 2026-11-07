@@ -1,0 +1,427 @@
+{
+    "CustomStageStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmCustomStage"
+            }
+        }
+    },
+    "CustomStageConfig": {
+        "attach": {
+            "profile_name": "",
+            "profile_id": ""
+        }
+    },
+    "CustomStageWithRecovery": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyStaminaStartAttempt",
+                    "label": "自定义关卡"
+                }
+            }
+        }
+    },
+    "CustomStageEntryImage": {
+        "enabled": false,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/TopLeftBack720.png"
+                ],
+                "roi": [
+                    0,
+                    160,
+                    720,
+                    1000
+                ],
+                "threshold": 0.85
+            }
+        }
+    },
+    "CustomStageTargetImage": {
+        "enabled": false,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/TopLeftBack720.png"
+                ],
+                "roi": [
+                    0,
+                    160,
+                    720,
+                    1000
+                ],
+                "threshold": 0.85
+            }
+        }
+    },
+    "CustomStageListPage": {
+        "enabled": false,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/TopLeftBack720.png"
+                ],
+                "roi": [
+                    50,
+                    60,
+                    600,
+                    80
+                ],
+                "threshold": 0.85
+            }
+        }
+    },
+    "CustomStageMainExpedition": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/MainExpedition720.png"
+                ],
+                "roi": [
+                    480,
+                    820,
+                    240,
+                    210
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "CustomStageCurrentActivityTab": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/CurrentActivityTab720.png"
+                ],
+                "roi": [
+                    250,
+                    80,
+                    230,
+                    100
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "CustomStageLimitedActivityTab": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "Common/LimitedActivityTab720.png"
+                ],
+                "roi": [
+                    460,
+                    80,
+                    260,
+                    100
+                ],
+                "threshold": 0.82
+            }
+        }
+    },
+    "CustomStageActivityRouter": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageOpenExpedition",
+            "CustomStageOpenTarget",
+            "CustomStageOpenEntry",
+            "CustomStageOpenLimitedActivities",
+            "CustomStageOpenCurrentActivities",
+            "CustomStageScrollDown"
+        ],
+        "timeout": 30000,
+        "rate_limit": 1000,
+        "max_hit": 30,
+        "on_error": [
+            "CustomStageNavigationNotFound"
+        ]
+    },
+    "CustomStageOpenExpedition": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageMainExpedition"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 600,
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageActivityRouter"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 2
+    },
+    "CustomStageOpenEntry": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageEntryImage"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 500,
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageActivityRouter"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 3
+    },
+    "CustomStageOpenCurrentActivities": {
+        "enabled": false,
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageCurrentActivityTab"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 500,
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageActivityRouter"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 2
+    },
+    "CustomStageOpenLimitedActivities": {
+        "enabled": true,
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageLimitedActivityTab"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 500,
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageActivityRouter"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 2
+    },
+    "CustomStageOpenTarget": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageListPage",
+                    "CustomStageTargetImage"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 500,
+        "next": [
+            "CustomStageConfirmDetail"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 3
+    },
+    "CustomStageScrollDown": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CustomStageListPage"
+                ]
+            }
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    360,
+                    1000
+                ],
+                "end": [
+                    360,
+                    450
+                ],
+                "duration": 500
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1000
+        },
+        "post_delay": 350,
+        "next": [
+            "CustomStageActivityRouter"
+        ],
+        "rate_limit": 1000,
+        "max_hit": 6
+    },
+    "CustomStageNavigationNotFound": {
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "focus": {
+            "Node.Recognition.Succeeded": "自定义关卡：无状态导航在30秒内未识别到出征、活动页签、活动入口或关卡截图；请确认页面可见并检查截图"
+        }
+    },
+    "CustomStageConfirmDetail": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "CustomStageDetailReady",
+            "CustomStageDirectBattleReady"
+        ],
+        "timeout": 8000,
+        "on_error": [
+            "CustomStageDetailNotFound"
+        ]
+    },
+    "CustomStageDetailReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyStaminaSweepButton"
+                ]
+            }
+        },
+        "next": [
+            "DailyStaminaStageDetailInitialDecision"
+        ]
+    },
+    "CustomStageEntryNotFound": {
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "focus": {
+            "Node.Recognition.Succeeded": "自定义关卡：未找到活动入口图片，请检查配置是否对应目前活动列表；不点击其他活动"
+        }
+    },
+    "CustomStageStageNotFound": {
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "focus": {
+            "Node.Recognition.Succeeded": "自定义关卡：关卡未找到、列表页面不匹配或已向下寻找6屏；请检查截图和活动路线"
+        }
+    },
+    "CustomStageDetailNotFound": {
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "focus": {
+            "Node.Recognition.Succeeded": "自定义关卡：点击后未确认军团扫荡详情或开始页，请重新设置可进入战斗的关卡截图"
+        }
+    },
+    "CustomStageDirectBattleReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyStaminaTrainingStartButton"
+                ]
+            }
+        },
+        "next": [
+            "CustomStageDirectBattle"
+        ]
+    },
+    "CustomStageDirectBattle": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmCustomStage",
+                "custom_action_param": {
+                    "mode": "direct"
+                }
+            }
+        }
+    },
+    "CustomStageDirectInitial": {
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyStaminaRefillWithPotionWhenLow",
+            "DailyStaminaRefillWithCurrencyWhenLow",
+            "DailyStaminaTrainingFinishWhenLow",
+            "DailyStaminaTrainingStart"
+        ],
+        "timeout": 8000,
+        "on_error": [
+            "CustomStageDetailNotFound"
+        ]
+    }
+}

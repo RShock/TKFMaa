@@ -363,7 +363,11 @@ def build_override(resolved):
             "next": [ROUTE_START_NODES[route_type]]
         },
         "DailyStaminaPresetActivityName": {
-            "recognition": ocr_recognition(resolved["activity_name"])
+            "recognition": (
+                copy.deepcopy(resolved["activity_name"]["recognition"])
+                if resolved["activity_name"].get("recognition")
+                else ocr_recognition(resolved["activity_name"])
+            )
         },
         "DailyStaminaPresetStageListTarget": {
             "recognition": ocr_recognition(stage, resolved.get("stage_roi"))
@@ -444,7 +448,7 @@ def build_override(resolved):
 def build_cases(config):
     config = expand_activity_groups(config)
     validate_config(config)
-    return [
+    cases = [
         {
             "name": activity["name"],
             "description": activity.get("description", ""),
@@ -452,6 +456,28 @@ def build_cases(config):
         }
         for activity in config["activities"]
     ]
+    # One stable storage slot for instance-local profiles. The frontend extension
+    # expands it into named choices in the existing stamina select control.
+    cases.append(
+        {
+            "name": "__TKFM_CUSTOM_STAGE__",
+            "label": "自定义关卡（连接设备后选择或添加）",
+            "description": "在消耗体力的关卡下拉框内选择或添加自定义截图关卡。",
+            "pipeline_override": {
+                "DailyStaminaStart": {
+                    "recognition": {"type": "DirectHit"},
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "TkfmCustomStage",
+                            "custom_action_param": {},
+                        },
+                    },
+                }
+            },
+        }
+    )
+    return cases
 
 
 def write_interface(interface_path, interface):

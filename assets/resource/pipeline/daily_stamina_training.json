@@ -1,0 +1,91 @@
+{
+    "DailyStaminaTrainingStart": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "DailyStaminaPresetStaminaEnough",
+                    "__DailyStaminaTrainingStartButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": 300,
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyStaminaWaitBattleResult"
+        ]
+    },
+    "DailyStaminaTrainingResumeStart": {
+        "enabled": false,
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "DailyStaminaPresetStaminaEnough",
+                    "__DailyStaminaTrainingStartButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_delay": 600,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                270,
+                1090,
+                180,
+                85
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 400,
+        "next": [
+            "DailyStaminaWaitBattleResult"
+        ],
+        "max_hit": 6
+    },
+    "DailyStaminaTrainingFinishWhenLow": {
+        "enabled": false,
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "DailyStaminaPresetStaminaLow",
+                    "__DailyStaminaTrainingStartButton"
+                ]
+            }
+        },
+        "next": [
+            "DailyStaminaBattleExitToMain"
+        ]
+    },
+    "__DailyStaminaTrainingStartButton": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "开始"
+                ],
+                "roi": [
+                    270,
+                    1090,
+                    180,
+                    85
+                ]
+            }
+        }
+    }
+}

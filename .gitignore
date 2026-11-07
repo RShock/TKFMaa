@@ -467,3 +467,6 @@ tmp
 /tools/test_*.py
 /docs/zh_cn/develop/
 /docs/zh_cn/records/
+
+# User-recorded activity and stage templates (private local data)
+/assets/resource/image/UserStages/

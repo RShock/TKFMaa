@@ -2,178 +2,81 @@ version: 1
 
 defaults:
   activity_section:
-    expected: ["限时活动"]
-    roi: [480, 90, 150, 80]
+    expected: ["目前活动"]
+    roi: [270, 90, 180, 80]
   activity_name_roi: [70, 770, 580, 60]
   stage_roi: [0, 160, 720, 1000]
   stamina_roi: [500, 0, 180, 45]
   reserve: 0
 
 templates:
-  regular_paged_list:
-    route_type: normal_list
-    extra_overrides:
-      DailyStaminaPresetInnerRouteStart:
-        next: ["DailyStaminaRouteRegularPagedFirstPageStart"]
-
-  rerun_activity_map:
-    route_type: rerun_map
-
-  large_activity_stage_icon:
-    route_type: special_icon
-
-  large_activity_direct_stage:
-    route_type: challenge_button
-
   daily_affairs_list:
     route_type: daily_affairs
 
 activities:
-  - name: "常驻关卡 - 战争演习-特IV"
-    description: "常驻路线：目前活动 → 日常政务 → 战争演习，进入纵向关卡列表后寻找战争演习-特IV。"
+  - name: "日常调教本"
+    description: "出征 → 目前活动 → 每日政务（图片）→ 调教 → 开发IV → 开始，随后再次挑战；仅匹配固定短文字，适配每日变化的属性，单次消耗15体力。"
     template: daily_affairs_list
     activity_section:
       expected: ["目前活动"]
       roi: [270, 90, 180, 80]
     activity_name:
       expected: ["日常政务"]
-      roi: [60, 740, 300, 110]
+      recognition:
+        type: TemplateMatch
+        param:
+          template: "DailyStamina/DailyAffairs720.png"
+          roi: [350, 380, 290, 110]
+          threshold: 0.8
     daily_affairs:
       category:
-        expected: ["战争演习"]
+        expected: ["调教"]
         roi: [350, 120, 300, 1120]
     stage:
-      expected: ["战争演习-特IV", "战争演习-特Ⅳ"]
+      expected: ['开发\s*(IV|Ⅳ)\s*$']
+      roi: [160, 145, 320, 800]
       any_selectable:
-        expected: ["Lv.10", "Lv.15", "Lv.20", "Lv.30", "Lv.45", "Lv.60"]
-        roi: [70, 80, 120, 1080]
+        expected: ["Lv"]
+        roi: [80, 110, 100, 600]
     stamina:
-      cost: 4
-
-activity_groups:
-  trick_or_sweet:
-    case_prefix: "Trick or Sweet"
-    description_template: "限时活动外部路线 + 常规活动纵向关卡列表：选择 {activity}，进入关卡列表后寻找{stage}，刷取{stage}。"
-    base:
-      template: regular_paged_list
-      stamina:
-        cost: 30
-      activity_name:
-        expected: ["^Trick or Sweet$"]
-        roi: [70, 770, 580, 80]
-      stage:
-        any_selectable:
-          expected: ["Trick or Sweet", "活动挑战还有"]
-          roi: [0, 90, 720, 180]
-      extra_overrides:
-        DailyStaminaPresetFirstPageMarker:
-          enabled: true
-          recognition:
-            type: OCR
-            param:
-              expected:
-                [
-                  "研究-01",
-                  "研究01",
-                  "基金-01",
-                  "基金01",
-                  "法令-01",
-                  "法令01",
-                  "南瓜-01",
-                  "南瓜01",
-                  "糖果-01",
-                  "糖果01",
-                  "捣蛋-01",
-                  "捣蛋01",
-                ]
-              roi: [0, 160, 720, 1000]
-    cases:
-      - case_suffix: "研究-01"
-        stage:
-          expected: ["研究-01", "研究01"]
-        stamina:
-          cost: 25
-      - case_suffix: "基金-01"
-        stage:
-          expected: ["基金-01", "基金01"]
-      - case_suffix: "法令-01"
-        stage:
-          expected: ["法令-01", "法令01"]
-      - case_suffix: "南瓜-01"
-        stage:
-          expected: ["南瓜-01", "南瓜01"]
-      - case_suffix: "糖果-01"
-        stage:
-          expected: ["糖果-01", "糖果01"]
-      - case_suffix: "捣蛋-01"
-        stage:
-          expected: ["捣蛋-01", "捣蛋01"]
-        stamina:
-          cost: 45
-
-  halloween_deer_rerun:
-    case_prefix: "万圣鹿娘大横行！"
-    description_template: "复刻活动二维地图：选择 {activity}，进入{stage}并扫荡。"
-    base:
-      template: rerun_activity_map
-      activity_name:
-        expected: ["万圣鹿娘大横行！"]
-        roi: [70, 770, 580, 80]
-      rerun:
-        marker:
-          expected: ["Story", "Free Quest"]
-          roi: [0, 160, 720, 1000]
-        column: left
-      stamina:
-        cost: 30
-    cases:
-      - case_suffix: "关卡-1"
-        stage:
-          expected: ["关卡-1"]
-      - case_suffix: "关卡-2"
-        stage:
-          expected: ["关卡-2"]
-      - case_suffix: "关卡-3"
-        stage:
-          expected: ["关卡-3"]
-      - case_suffix: "关卡-4"
-        stage:
-          expected: ["关卡-4"]
-      - case_suffix: "关卡-5"
-        stage:
-          expected: ["关卡-5"]
-      - case_suffix: "陷阱-1"
-        rerun:
-          column: right
-        stage:
-          expected: ["陷阱-1"]
-        stamina:
-          cost: 50
-      - case_suffix: "陷阱-2"
-        rerun:
-          column: right
-        stage:
-          expected: ["陷阱-2"]
-        stamina:
-          cost: 50
-      - case_suffix: "陷阱-3"
-        rerun:
-          column: right
-        stage:
-          expected: ["陷阱-3"]
-        stamina:
-          cost: 50
-      - case_suffix: "陷阱-4"
-        rerun:
-          column: right
-        stage:
-          expected: ["陷阱-4"]
-        stamina:
-          cost: 50
-      - case_suffix: "陷阱-5"
-        rerun:
-          column: right
-        stage:
-          expected: ["陷阱-5"]
-        stamina:
-          cost: 50
+      cost: 15
+    extra_overrides:
+      DailyStaminaOpenTargetStage:
+        action:
+          param:
+            target_offset: [0, 0, 0, 0]
+      DailyStaminaStageDetailInitialDecision:
+        next:
+          - "[Anchor]DailyStaminaLowDecision"
+          - "DailyStaminaRefillWithPotionWhenLow"
+          - "DailyStaminaRefillWithCurrencyWhenLow"
+          - "DailyStaminaReturnMainWhenLow"
+          - "DailyStaminaTrainingStart"
+      DailyStaminaTrainingResumeStart:
+        enabled: true
+      DailyStaminaTrainingFinishWhenLow:
+        enabled: true
+      DailyStaminaRefillWithPotionWhenLow:
+        action:
+          param:
+            target: [360, 1143]
+      DailyStaminaRefillWithCurrencyWhenLow:
+        action:
+          param:
+            target: [360, 1143]
+      DailyStaminaUsePotionPopup:
+        next:
+          - "[JumpBack]CommonWaitLoading"
+          - "DailyStaminaCloseStaminaPurchasePopupAfterRefill"
+          - "DailyStaminaStageDetailInitialDecision"
+      DailyStaminaCloseStaminaPurchasePopupAfterRefill:
+        next:
+          - "[JumpBack]CommonWaitLoading"
+          - "DailyStaminaStageDetailInitialDecision"
+      DailyStaminaCurrencyPurchasedState:
+        next:
+          - "[JumpBack]CommonWaitLoading"
+          - "DailyStaminaCloseStaminaPurchasePopupAfterRefill"
+          - "DailyStaminaReturnMainWhenLow"
+          - "DailyStaminaTrainingStart"
+          - "DailyStaminaReturnMainFromStageDetail"

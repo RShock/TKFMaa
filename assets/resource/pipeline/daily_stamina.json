@@ -1,5 +1,20 @@
 {
     "DailyStaminaStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyStaminaStartAttempt",
+                    "label": "消耗体力"
+                }
+            }
+        }
+    },
+    "DailyStaminaStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
@@ -448,11 +463,12 @@
         ]
     },
     "DailyStaminaStopAfterSweepTimeout": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "action": {
-            "type": "StopTask"
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "timeout": 1000,
+        "focus": {
+            "Node.Action.Starting": "扫荡超时且局部恢复未成功，交由统一异常恢复处理"
         }
     },
     "DailyStaminaSweepResultDispatch": {
@@ -627,15 +643,7 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 1200,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
+        "post_delay": 400,
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyStaminaWaitBattleResult"
@@ -647,6 +655,8 @@
             "[JumpBack]CommonWaitLoading",
             "DailyStaminaBattleContinueWhenEnough",
             "DailyStaminaBattleReturnMapWhenLow",
+            "DailyStaminaTrainingFinishWhenLow",
+            "DailyStaminaTrainingResumeStart",
             "[JumpBack]DailyStaminaBattleInProgress"
         ],
         "timeout": 180000,
@@ -672,20 +682,22 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 1200,
+        "pre_delay": 800,
+        "pre_wait_freezes": {
+            "time": 500,
             "target": [
-                0,
-                0,
-                0,
-                0
-            ]
+                180,
+                1160,
+                160,
+                70
+            ],
+            "timeout": 1500
         },
+        "post_delay": 400,
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyStaminaWaitBattleResult"
-        ],
-        "pre_wait_freezes": 300
+        ]
     },
     "DailyStaminaBattleReturnMapWhenLow": {
         "recognition": {
@@ -705,20 +717,80 @@
                 "target": true
             }
         },
-        "post_wait_freezes": {
-            "time": 1200,
+        "pre_delay": 800,
+        "pre_wait_freezes": {
+            "time": 500,
             "target": [
-                0,
-                0,
-                0,
-                0
-            ]
+                390,
+                1160,
+                160,
+                70
+            ],
+            "timeout": 1500
         },
+        "post_delay": 400,
+        "next": [
+            "DailyStaminaBattleExitToMain"
+        ],
+        "max_hit": 4
+    },
+    "DailyStaminaBattleExitToMain": {
         "next": [
             "[JumpBack]CommonWaitLoading",
-            "DailyStaminaReturnMainFromStageList"
+            "[JumpBack]CommonCloseMainGift",
+            "DailyStaminaBattleReturnMapWhenLow",
+            "CommonStopOnMainObserve",
+            "DailyStaminaBattleReturnByBackButton"
         ],
-        "pre_wait_freezes": 300
+        "timeout": 3000,
+        "on_error": [
+            "CommonEnsureMain"
+        ]
+    },
+    "DailyStaminaBattleReturnByBackButton": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyStaminaBattleResultButtonsAbsent",
+                    "CommonReturnMainByBackButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                15,
+                52,
+                85,
+                44
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyStaminaBattleExitToMain"
+        ],
+        "max_hit": 6
+    },
+    "__DailyStaminaBattleResultButtonsAbsent": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "__DailyStaminaAgainChallengeButton",
+                    "__DailyStaminaReturnMapButton"
+                ]
+            }
+        },
+        "inverse": true
     },
     "__DailyStaminaBattleResultClear": {
         "recognition": {
@@ -805,15 +877,7 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 3000,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        }
+        "post_delay": 1000
     },
     "DailyStaminaReturnMainFromStageDetail": {
         "recognition": {
