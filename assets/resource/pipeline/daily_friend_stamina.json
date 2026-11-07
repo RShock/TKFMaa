@@ -1,14 +1,35 @@
 {
     "DailyFriendStaminaStart": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmRunWithRecovery",
+                "custom_action_param": {
+                    "entry": "DailyFriendStaminaStartAttempt",
+                    "label": "领取体力",
+                    "success_any_hit": [
+                        "DailyFriendStaminaClickReceive",
+                        "DailyFriendStaminaAlreadyClaimed"
+                    ]
+                }
+            }
+        }
+    },
+    "DailyFriendStaminaStartAttempt": {
         "next": [
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
             "DailyFriendStaminaOpenProfileFromMain",
-            "[JumpBack]DailyFriendStaminaWaitFriendListLoading",
-            "[JumpBack]DailyFriendStaminaCloseProfile",
-            "[JumpBack]CommonEnsureMain"
+            "DailyFriendStaminaOpenFriendList",
+            "DailyFriendStaminaReceive"
         ],
-        "timeout": 10000
+        "timeout": 10000,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaOpenProfileFromMain": {
         "recognition": {
@@ -40,21 +61,25 @@
         "next": [
             "DailyFriendStaminaOpenFriendList"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaOpenFriendList": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "玩家信息"
-                ],
                 "roi": [
-                    250,
-                    110,
+                    60,
+                    180,
                     220,
-                    80
-                ]
+                    100
+                ],
+                "template": [
+                    "DailyFriendStamina/ProfilePersonalSelected720.png"
+                ],
+                "threshold": 0.92
             }
         },
         "action": {
@@ -78,90 +103,36 @@
         "next": [
             "DailyFriendStaminaReceive"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaReceive": {
         "next": [
-            "[JumpBack]DailyFriendStaminaWaitFriendListLoading",
             "DailyFriendStaminaClickReceive",
-            "DailyFriendStaminaCloseProfile"
+            "DailyFriendStaminaAlreadyClaimed"
         ],
-        "timeout": 5000
-    },
-    "DailyFriendStaminaWaitFriendListLoading": {
-        "recognition": {
-            "type": "Or",
-            "param": {
-                "any_of": [
-                    "__DailyFriendStaminaFriendListLoadingText",
-                    "__DailyFriendStaminaFriendListLoadingEnergy"
-                ]
-            }
-        },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        "next": [
-            "DailyFriendStaminaWaitFriendListLoading",
-            "DailyFriendStaminaCloseProfileForRetry"
+        "timeout": 15000,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
         ],
-        "max_hit": 8
-    },
-    "__DailyFriendStaminaFriendListLoadingText": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "LOADING",
-                    "LOAD ING"
-                ],
-                "roi": [
-                    250,
-                    1190,
-                    230,
-                    70
-                ]
-            }
-        }
-    },
-    "__DailyFriendStaminaFriendListLoadingEnergy": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "能量获取：XX/YY",
-                    "能量獲取：XX/YY",
-                    "体力获取：XX/YY"
-                ],
-                "roi": [
-                    130,
-                    1080,
-                    240,
-                    70
-                ]
-            }
-        }
+        "post_delay": 500
     },
     "DailyFriendStaminaClickReceive": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "一键领取",
-                    "键领取"
-                ],
                 "roi": [
-                    390,
+                    360,
                     1050,
-                    230,
-                    90
-                ]
+                    280,
+                    120
+                ],
+                "template": [
+                    "DailyFriendStamina/OneClickClaim720.png"
+                ],
+                "threshold": 0.92
             }
         },
         "action": {
@@ -183,22 +154,25 @@
             "DailyFriendStaminaCloseProfile"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaCloseProfile": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "好友清单",
-                    "玩家信息"
-                ],
                 "roi": [
-                    250,
-                    110,
-                    380,
-                    190
-                ]
+                    240,
+                    175,
+                    240,
+                    100
+                ],
+                "template": [
+                    "DailyFriendStamina/FriendListSelected720.png"
+                ],
+                "threshold": 0.92
             }
         },
         "action": {
@@ -213,22 +187,25 @@
         "next": [
             "DailyFriendStaminaDone"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaCloseProfileForRetry": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "好友清单",
-                    "玩家信息"
-                ],
                 "roi": [
-                    250,
-                    110,
-                    380,
-                    190
-                ]
+                    240,
+                    175,
+                    240,
+                    100
+                ],
+                "template": [
+                    "DailyFriendStamina/FriendListSelected720.png"
+                ],
+                "threshold": 0.92
             }
         },
         "action": {
@@ -244,11 +221,46 @@
             "DailyFriendStaminaOpenProfileFromMain"
         ],
         "max_hit": 1,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": 300,
+        "on_error": [
+            "DailyFriendStaminaAbortToMain"
+        ]
     },
     "DailyFriendStaminaDone": {
         "next": [
             "CommonStopOnMainWithRetries"
         ]
+    },
+    "DailyFriendStaminaAbortToMain": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "[JumpBack]CommonCloseMainGift",
+            "[JumpBack]CommonCloseReward",
+            "CommonEnsureMain"
+        ]
+    },
+    "DailyFriendStaminaAlreadyClaimed": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    360,
+                    1050,
+                    280,
+                    120
+                ],
+                "template": [
+                    "DailyFriendStamina/OneClickClaimed720.png"
+                ],
+                "threshold": 0.92
+            }
+        },
+        "next": [
+            "DailyFriendStaminaCloseProfile"
+        ],
+        "max_hit": 1
     }
 }
