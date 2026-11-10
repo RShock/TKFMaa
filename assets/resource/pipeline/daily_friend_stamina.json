@@ -11,8 +11,7 @@
                     "entry": "DailyFriendStaminaStartAttempt",
                     "label": "领取体力",
                     "success_any_hit": [
-                        "DailyFriendStaminaClickReceive",
-                        "DailyFriendStaminaAlreadyClaimed"
+                        "DailyFriendStaminaDone"
                     ]
                 }
             }
@@ -20,16 +19,16 @@
     },
     "DailyFriendStaminaStartAttempt": {
         "next": [
-            "[JumpBack]CommonWaitLoading",
+            "DailyFriendStaminaWaitLoading",
             "[JumpBack]CommonCloseMainGift",
-            "DailyFriendStaminaOpenProfileFromMain",
+            "DailyFriendStaminaCloseReward",
+            "DailyFriendStaminaAlreadyClaimed",
+            "DailyFriendStaminaClickReceive",
             "DailyFriendStaminaOpenFriendList",
-            "DailyFriendStaminaReceive"
+            "DailyFriendStaminaOpenProfileFromMain"
         ],
-        "timeout": 10000,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
+        "timeout": 15000,
+        "max_hit": 30
     },
     "DailyFriendStaminaOpenProfileFromMain": {
         "recognition": {
@@ -37,7 +36,8 @@
             "param": {
                 "all_of": [
                     "CommonMainReady"
-                ]
+                ],
+                "box_index": 0
             }
         },
         "action": {
@@ -49,24 +49,256 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500,
             "target": [
-                0,
-                0,
-                0,
-                0
+                85,
+                65,
+                135,
+                80
             ]
         },
+        "post_delay": 500,
         "next": [
-            "DailyFriendStaminaOpenFriendList"
+            "DailyFriendStaminaStartAttempt"
         ],
-        "pre_wait_freezes": 300,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
+        "max_hit": 5
     },
     "DailyFriendStaminaOpenFriendList": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyFriendStaminaPersonalSelected",
+                    "__DailyFriendStaminaFriendListButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyFriendStaminaStartAttempt"
+        ],
+        "max_hit": 5
+    },
+    "DailyFriendStaminaClickReceive": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyFriendStaminaFriendListSelected",
+                    "__DailyFriendStaminaClaimButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyFriendStaminaStartAttempt"
+        ],
+        "max_hit": 3,
+        "focus": {
+            "Node.Action.Succeeded": "领取体力：识别到可领取按钮，已点击中心；继续按当前画面选择动作。"
+        }
+    },
+    "DailyFriendStaminaAlreadyClaimed": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyFriendStaminaFriendListSelected",
+                    "__DailyFriendStaminaClaimedButton",
+                    "__DailyFriendStaminaProfileCloseButton"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyFriendStaminaReceive"
+        ],
+        "max_hit": 5,
+        "focus": {
+            "Node.Action.Succeeded": "领取体力：当前显示已领取，已点击关闭玩家信息。"
+        }
+    },
+    "DailyFriendStaminaReceive": {
+        "next": [
+            "DailyFriendStaminaFinishWaitLoading",
+            "[JumpBack]CommonCloseMainGift",
+            "DailyFriendStaminaFinishCloseReward",
+            "DailyFriendStaminaCloseProfile",
+            "DailyFriendStaminaDone"
+        ],
+        "timeout": 10000,
+        "max_hit": 15
+    },
+    "DailyFriendStaminaCloseProfile": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyFriendStaminaProfilePage",
+                    "__DailyFriendStaminaProfileCloseButton"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyFriendStaminaReceive"
+        ],
+        "max_hit": 5,
+        "focus": {
+            "Node.Action.Succeeded": "领取体力：玩家信息的关闭按钮仍在，已重新识图点击中心。"
+        }
+    },
+    "DailyFriendStaminaDone": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonMainReady"
+                ],
+                "box_index": 0
+            }
+        },
+        "focus": {
+            "Node.Recognition.Succeeded": "领取体力：已领取并回到主页，任务结束。"
+        }
+    },
+    "DailyFriendStaminaWaitLoading": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonWaitLoading"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyFriendStaminaStartAttempt"
+        ],
+        "post_delay": 500,
+        "max_hit": 15
+    },
+    "DailyFriendStaminaFinishWaitLoading": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonWaitLoading"
+                ],
+                "box_index": 0
+            }
+        },
+        "next": [
+            "DailyFriendStaminaReceive"
+        ],
+        "post_delay": 500,
+        "max_hit": 15
+    },
+    "DailyFriendStaminaCloseReward": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonCloseReward"
+                ],
+                "box_index": 0
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyFriendStaminaStartAttempt"
+        ],
+        "max_hit": 5
+    },
+    "DailyFriendStaminaFinishCloseReward": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonCloseReward"
+                ],
+                "box_index": 0
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyFriendStaminaReceive"
+        ],
+        "max_hit": 5
+    },
+    "__DailyFriendStaminaPersonalSelected": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -81,45 +313,60 @@
                 ],
                 "threshold": 0.92
             }
-        },
-        "action": {
-            "type": "Click",
+        }
+    },
+    "__DailyFriendStaminaFriendListButton": {
+        "recognition": {
+            "type": "TemplateMatch",
             "param": {
-                "target": [
-                    360,
-                    219
-                ]
+                "roi": [
+                    270,
+                    190,
+                    180,
+                    65
+                ],
+                "template": [
+                    "DailyFriendStamina/FriendListUnselected720.png"
+                ],
+                "threshold": 0.92
             }
-        },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        "next": [
-            "DailyFriendStaminaReceive"
-        ],
-        "pre_wait_freezes": 300,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
+        }
     },
-    "DailyFriendStaminaReceive": {
-        "next": [
-            "DailyFriendStaminaClickReceive",
-            "DailyFriendStaminaAlreadyClaimed"
-        ],
-        "timeout": 15000,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ],
-        "post_delay": 500
+    "__DailyFriendStaminaFriendListSelected": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    240,
+                    175,
+                    240,
+                    100
+                ],
+                "template": [
+                    "DailyFriendStamina/FriendListSelected720.png"
+                ],
+                "threshold": 0.92
+            }
+        }
     },
-    "DailyFriendStaminaClickReceive": {
+    "__DailyFriendStaminaProfileCloseButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    310,
+                    1170,
+                    100,
+                    100
+                ],
+                "template": [
+                    "DailyFriendStamina/ProfileClose720.png"
+                ],
+                "threshold": 0.92
+            }
+        }
+    },
+    "__DailyFriendStaminaClaimButton": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -134,115 +381,9 @@
                 ],
                 "threshold": 0.92
             }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": true
-            }
-        },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        "next": [
-            "DailyFriendStaminaCloseProfile"
-        ],
-        "max_hit": 1,
-        "pre_wait_freezes": 300,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
+        }
     },
-    "DailyFriendStaminaCloseProfile": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "roi": [
-                    240,
-                    175,
-                    240,
-                    100
-                ],
-                "template": [
-                    "DailyFriendStamina/FriendListSelected720.png"
-                ],
-                "threshold": 0.92
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    360,
-                    1220
-                ]
-            }
-        },
-        "next": [
-            "DailyFriendStaminaDone"
-        ],
-        "pre_wait_freezes": 300,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
-    },
-    "DailyFriendStaminaCloseProfileForRetry": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "roi": [
-                    240,
-                    175,
-                    240,
-                    100
-                ],
-                "template": [
-                    "DailyFriendStamina/FriendListSelected720.png"
-                ],
-                "threshold": 0.92
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    360,
-                    1220
-                ]
-            }
-        },
-        "next": [
-            "DailyFriendStaminaOpenProfileFromMain"
-        ],
-        "max_hit": 1,
-        "pre_wait_freezes": 300,
-        "on_error": [
-            "DailyFriendStaminaAbortToMain"
-        ]
-    },
-    "DailyFriendStaminaDone": {
-        "next": [
-            "CommonStopOnMainWithRetries"
-        ]
-    },
-    "DailyFriendStaminaAbortToMain": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "next": [
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]CommonCloseMainGift",
-            "[JumpBack]CommonCloseReward",
-            "CommonEnsureMain"
-        ]
-    },
-    "DailyFriendStaminaAlreadyClaimed": {
+    "__DailyFriendStaminaClaimedButton": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -257,10 +398,17 @@
                 ],
                 "threshold": 0.92
             }
-        },
-        "next": [
-            "DailyFriendStaminaCloseProfile"
-        ],
-        "max_hit": 1
+        }
+    },
+    "__DailyFriendStaminaProfilePage": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "__DailyFriendStaminaFriendListSelected",
+                    "__DailyFriendStaminaPersonalSelected"
+                ]
+            }
+        }
     }
 }
