@@ -163,16 +163,35 @@
     },
     "DailyStaminaStageDetailInitialDecision": {
         "next": [
-            "[Anchor]DailyStaminaLowDecision",
-            "DailyStaminaRefillWithPotionWhenLow",
-            "DailyStaminaRefillWithCurrencyWhenLow",
-            "DailyStaminaReturnMainWhenLow",
-            "DailyStaminaOpenSweep"
+            "DailyStaminaStageDetailModeDecision"
         ],
         "timeout": 6000,
         "on_error": [
             "DailyStaminaReturnMainFromStageDetail"
         ]
+    },
+    "DailyStaminaStageDetailModeDecision": {
+        "next": [
+            "DailyStaminaNormalBattle"
+        ],
+        "timeout": 6000,
+        "on_error": [
+            "DailyStaminaReturnMainFromStageDetail"
+        ]
+    },
+    "DailyStaminaNormalBattle": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "TkfmCustomStage",
+                "custom_action_param": {
+                    "mode": "direct"
+                }
+            }
+        },
+        "focus": {
+            "Node.Action.Starting": "未勾选使用扫荡券，本次使用普通战斗推图。"
+        }
     },
     "DailyStaminaRefillWithPotionWhenLow": {
         "enabled": false,
@@ -283,6 +302,7 @@
         "post_delay": 500
     },
     "DailyStaminaOpenSweep": {
+        "enabled": false,
         "recognition": {
             "type": "And",
             "param": {
@@ -340,6 +360,7 @@
         }
     },
     "DailyStaminaSweepDialog": {
+        "enabled": false,
         "recognition": {
             "type": "OCR",
             "param": {
@@ -364,6 +385,7 @@
         ]
     },
     "DailyStaminaClickSweepMax": {
+        "enabled": false,
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -402,6 +424,7 @@
         "pre_wait_freezes": 300
     },
     "DailyStaminaStartSweep": {
+        "enabled": false,
         "recognition": {
             "type": "OCR",
             "param": {

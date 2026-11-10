@@ -80,6 +80,7 @@
             "option": [
                 "体力消耗关卡",
                 "活动页签",
+                "使用扫荡券",
                 "扫荡不足时手动补刷",
                 "体力不足时使用体力药",
                 "体力不足时购买体力"
@@ -89,7 +90,7 @@
                 "“活动页签”默认限时活动，也可切换为每日活动；两项都使用图片识别页签，不使用OCR。",
                 "连接设备并加载资源扩展后，当前步骤提供“管理自定义关卡”，支持多份命名配置，保存后直接选入当前消耗体力步骤。",
                 "自定义路线以低频无状态循环同时识别出征、所选活动页签、活动入口图片和关卡图片，命中哪个点哪个；可从主页、活动页或关卡列表开始，关卡列表向下最多寻找6次，进入后复用扫荡或直接战斗和现有体力恢复选项。",
-                "进入关卡详情后优先使用军团扫荡最大次数；扫荡券不足时可选是否手动补刷（没测试过）。"
+                "“使用扫荡券”默认不勾选，使用普通战斗和再次挑战；勾选后优先军团扫荡最大次数，扫荡不足时按“扫荡不足时手动补刷”决定是否继续普通战斗。战斗AUTO须预先开启。"
             ]
         },
         {
@@ -404,13 +405,69 @@
                 }
             ]
         },
+        "使用扫荡券": {
+            "type": "switch",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "description": "优先使用扫荡券进行军团扫荡；不足时是否普通战斗由“扫荡不足时手动补刷”决定。仅提供开始按钮的关卡仍使用普通战斗。",
+                    "pipeline_override": {
+                        "DailyStaminaStageDetailModeDecision": {
+                            "next": [
+                                "[Anchor]DailyStaminaLowDecision",
+                                "DailyStaminaRefillWithPotionWhenLow",
+                                "DailyStaminaRefillWithCurrencyWhenLow",
+                                "DailyStaminaReturnMainWhenLow",
+                                "DailyStaminaOpenSweep"
+                            ]
+                        },
+                        "DailyStaminaOpenSweep": {
+                            "enabled": true
+                        },
+                        "DailyStaminaSweepDialog": {
+                            "enabled": true
+                        },
+                        "DailyStaminaClickSweepMax": {
+                            "enabled": true
+                        },
+                        "DailyStaminaStartSweep": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "description": "不使用扫荡券，直接普通战斗并再次挑战；不受“扫荡不足时手动补刷”开关限制。",
+                    "pipeline_override": {
+                        "DailyStaminaStageDetailModeDecision": {
+                            "next": [
+                                "DailyStaminaNormalBattle"
+                            ]
+                        },
+                        "DailyStaminaOpenSweep": {
+                            "enabled": false
+                        },
+                        "DailyStaminaSweepDialog": {
+                            "enabled": false
+                        },
+                        "DailyStaminaClickSweepMax": {
+                            "enabled": false
+                        },
+                        "DailyStaminaStartSweep": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
         "扫荡不足时手动补刷": {
             "type": "switch",
             "default_case": "No",
             "cases": [
                 {
                     "name": "Yes",
-                    "description": "扫荡券不足或扫荡后仍有足够体力时，继续使用开始/再次挑战手动补刷。",
+                    "description": "仅勾选“使用扫荡券”时生效：扫荡券不足或扫荡后仍有足够体力时，继续使用开始/再次挑战手动补刷。",
                     "pipeline_override": {
                         "DailyStaminaManualStart": {
                             "enabled": true
@@ -419,7 +476,7 @@
                 },
                 {
                     "name": "No",
-                    "description": "只使用军团扫荡；扫荡不可用或扫荡后仍有体力也返回主界面停止。",
+                    "description": "仅勾选“使用扫荡券”时生效：扫荡不可用或扫荡后仍有体力也返回主界面停止。未勾选使用扫荡券时仍正常战斗。",
                     "pipeline_override": {
                         "DailyStaminaManualStart": {
                             "enabled": false
