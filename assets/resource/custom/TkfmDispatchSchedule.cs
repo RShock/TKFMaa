@@ -341,12 +341,16 @@ internal sealed class DispatchClock : IDisposable
             ["config"] = config.DeepClone(), ["overrides"] = overrides.DeepClone(),
             ["handled"] = false, ["wait_closed"] = false
         };
-        var device = processor.InstanceConfiguration.GetValue("AdbDevice", new JObject());
-        job["serial"] = (string)device["AdbSerial"] ?? "";
-        job["adb"] = (string)device["AdbPath"] ?? "";
+        // Snapshot the active controller configuration, not a JObject cast of the
+        // persisted device value (which can be an AdbDeviceInfo in memory).
+        var device = processor.Config.AdbDevice;
+        if (string.IsNullOrWhiteSpace(device.AdbPath) || string.IsNullOrWhiteSpace(device.AdbSerial))
+            throw new InvalidOperationException("所选 ADB 设备的路径或地址缺失，请重新选择并连接设备后预约");
+        job["serial"] = device.AdbSerial;
+        job["adb"] = device.AdbPath;
         if ((bool?)config["manage_emulator"] == true)
         {
-            var metadata = JObject.Parse((string)device["Config"] ?? "{}")["extras"]?["mumu"];
+            var metadata = JObject.Parse(device.Config ?? "{}")["extras"]?["mumu"];
             int? index = (int?)metadata?["index"];
             string path = (string)metadata?["path"];
             if ((bool?)metadata?["enable"] != true || index == null || index < 0 || string.IsNullOrWhiteSpace(path))
@@ -379,7 +383,7 @@ internal sealed class DispatchClock : IDisposable
 
     private static bool SharedBusy(MaaProcessor owner, JObject job) => MaaProcessor.Processors.ToArray().Any(p =>
         !ReferenceEquals(p, owner) && Busy(p)
-        && (string)p.InstanceConfiguration.GetValue("AdbDevice", new JObject())["AdbSerial"] == (string)job["serial"]);
+        && p.Config.AdbDevice.AdbSerial == (string)job["serial"]);
 
     private void Tick(object sender, EventArgs args)
     {
@@ -529,8 +533,8 @@ internal sealed class DispatchClock : IDisposable
             var tasks = processor.ViewModel?.TaskItemViewModels.Where(t => !t.IsResourceOptionItem
                 && t.InterfaceItem?.Entry == "DailyDispatchStart").Take(1).ToList();
             if (tasks == null || tasks.Count != 1) throw new InvalidOperationException("当前实例缺少每日派遣任务");
-            var device = processor.InstanceConfiguration.GetValue("AdbDevice", new JObject());
-            if ((string)device["AdbSerial"] != (string)job["serial"])
+            var device = processor.Config.AdbDevice;
+            if (device.AdbSerial != (string)job["serial"])
                 throw new InvalidOperationException("预约后所选 ADB 设备已改变，请重新预约");
             // Discard controller/Agent handles held before the emulator was powered off.
             processor.SetTasker();
