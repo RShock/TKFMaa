@@ -832,29 +832,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    500,
-                    1045
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot1CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot1CountRecruit",
+            "DailyRecruitmentSlot1StartRecruitFallback"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第1栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第1栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot1StartRecruit": {
         "recognition": {
@@ -868,26 +870,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot1CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot1CountRecruit",
+            "DailyRecruitmentSlot1StartRecruit"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第1栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第1栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot2Decision": {
         "next": [
@@ -1166,29 +1173,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    500,
-                    1045
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot2CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot2CountRecruit",
+            "DailyRecruitmentSlot2StartRecruitFallback"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第2栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第2栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot2StartRecruit": {
         "recognition": {
@@ -1202,26 +1211,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot2CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot2CountRecruit",
+            "DailyRecruitmentSlot2StartRecruit"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第2栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第2栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot3Decision": {
         "next": [
@@ -1500,29 +1514,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    500,
-                    1045
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot3CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot3CountRecruit",
+            "DailyRecruitmentSlot3StartRecruitFallback"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第3栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第3栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot3StartRecruit": {
         "recognition": {
@@ -1536,26 +1552,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot3CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot3CountRecruit",
+            "DailyRecruitmentSlot3StartRecruit"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第3栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第3栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot4Decision": {
         "next": [
@@ -1834,29 +1855,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    500,
-                    1045
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot4CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot4CountRecruit",
+            "DailyRecruitmentSlot4StartRecruitFallback"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第4栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第4栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentSlot4StartRecruit": {
         "recognition": {
@@ -1870,26 +1893,31 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "DailyRecruitmentSlot4CountRecruit"
+            "[JumpBack]CommonWaitLoading",
+            "DailyRecruitmentSlot4CountRecruit",
+            "DailyRecruitmentSlot4StartRecruit"
         ],
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                390,
-                1000,
-                220,
-                90
-            ],
+            "target": true,
             "timeout": 1200
         },
-        "post_delay": 300,
-        "anchor": "TkfmRecruitmentPending"
+        "post_delay": 1000,
+        "anchor": "TkfmRecruitmentPending",
+        "timeout": 10000,
+        "max_hit": 3,
+        "rate_limit": 1000,
+        "focus": {
+            "Node.Action.Succeeded": "征才第4栏：已点击开始招募，等待游戏确认。",
+            "Node.PipelineNode.Failed": "征才第4栏：点击后未能确认开始招募，停止处理本栏。"
+        }
     },
     "DailyRecruitmentAfterSlots": {
         "next": [
@@ -2212,17 +2240,16 @@
     },
     "__DailyRecruitmentSetupStart": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "开始招募"
-                ],
+                "template": "DailyRecruitment/StartRecruitButton720.png",
                 "roi": [
-                    390,
-                    1000,
-                    220,
-                    90
-                ]
+                    380,
+                    1008,
+                    225,
+                    80
+                ],
+                "threshold": 0.82
             }
         }
     },
@@ -2557,7 +2584,7 @@
         "max_hit": 3,
         "rate_limit": 1000,
         "focus": {
-            "Node.Action.Succeeded": "征才第1栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+            "Node.Action.Succeeded": "征才第1栏：已点击加速确认，等待招募完成。"
         }
     },
     "__DailyRecruitmentSlot2Ready": {
@@ -2705,7 +2732,7 @@
         "max_hit": 3,
         "rate_limit": 1000,
         "focus": {
-            "Node.Action.Succeeded": "征才第2栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+            "Node.Action.Succeeded": "征才第2栏：已点击加速确认，等待招募完成。"
         }
     },
     "__DailyRecruitmentSlot3Ready": {
@@ -2853,7 +2880,7 @@
         "max_hit": 3,
         "rate_limit": 1000,
         "focus": {
-            "Node.Action.Succeeded": "征才第3栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+            "Node.Action.Succeeded": "征才第3栏：已点击加速确认，等待招募完成。"
         }
     },
     "__DailyRecruitmentSlot4Ready": {
@@ -3001,7 +3028,7 @@
         "max_hit": 3,
         "rate_limit": 1000,
         "focus": {
-            "Node.Action.Succeeded": "征才第4栏：已识图点击确定按钮中心；继续确认人才录取，仅弹窗仍在时有限重试（每批最多三次）"
+            "Node.Action.Succeeded": "征才第4栏：已点击加速确认，等待招募完成。"
         }
     },
     "DailyRecruitmentImmediateBatchRouter": {

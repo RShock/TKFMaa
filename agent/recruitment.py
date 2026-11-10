@@ -115,7 +115,7 @@ _CYCLE_HIT_COUNT_NODES = (
         for slot in RECRUITMENT_SLOTS
         for suffix in (
             "SkipLeader", "Open", "Refresh", "RecruitGuaranteed", "RecruitFallback",
-            "SelectTag1", "SelectTag2", "SelectTag3",
+            "SelectTag1", "SelectTag2", "SelectTag3", "StartRecruit", "StartRecruitFallback",
         )
     ),
     *(
@@ -280,7 +280,17 @@ class DailyRecruitmentRecordAttempt(CustomAction):
                     return False
                 _, _, entries = _recruitment_budget(context)
                 suffix = "；总次数已达标，保留剩余招募自然倒计时" if len(entries) == maximum else ""
-                print(f"[全境征才] 已处理 {len(entries)}/{maximum}：栏位{slot}，{'开始征才' if outcome == 'Recruit' else '领袖跳过'}{suffix}", flush=True)
+                session = _SLOT_SESSIONS.get(slot, {})
+                submitted = session.get("submitted")
+                expected_actions = {"recruit_guaranteed", "recruit_fallback"} if outcome == "Recruit" else {"skip_leader"}
+                if submitted and submitted["action"] in expected_actions:
+                    result = _recruitment_outcome_summary(submitted)
+                else:
+                    result = (
+                        f"第{slot}栏：已确认开始征才；本次词条和选词记录不可用"
+                        if outcome == "Recruit" else f"第{slot}栏：已确认保留领袖词条，本栏没有开始征才"
+                    )
+                print(f"[全境征才] {result}。已处理 {len(entries)}/{maximum}{suffix}", flush=True)
             if not context.set_anchor(f"TkfmRecruitmentWriting{len(entries)}", "DailyRecruitmentBudgetConfig"):
                 return False
             return context.set_anchor(RECRUITMENT_PENDING_ANCHOR, "DailyRecruitmentBudgetConfig")
@@ -298,15 +308,19 @@ class DailyRecruitmentFinishBatch(CustomAction):
             image = context.tasker.controller.cached_image
             if image is None or not _overview_is_clear(context, image):
                 return False
+            collected_slots = []
             for slot in RECRUITMENT_SLOTS:
                 if _slot_outcome(context, slot) == f"DailyRecruitmentSlot{slot}CountLeader":
                     continue
                 # Only collected slots become reusable. Other slots are still naturally running.
                 state = _overview_slot_state(context, image, slot)
-                if state in EMPTY_STATES and not context.set_anchor(
-                    f"TkfmRecruitmentSlot{slot}Outcome", "DailyRecruitmentBudgetConfig"
-                ):
-                    return False
+                if state in EMPTY_STATES:
+                    if _slot_outcome(context, slot) == f"DailyRecruitmentSlot{slot}CountRecruit":
+                        collected_slots.append(slot)
+                    if not context.set_anchor(f"TkfmRecruitmentSlot{slot}Outcome", "DailyRecruitmentBudgetConfig"):
+                        return False
+            target = "、".join(f"第{slot}栏" for slot in collected_slots) or "已有征才"
+            print(f"[全境征才] {target}的结果已收取并返回征才总览；本次未读取角色姓名。", flush=True)
             return True
         except Exception as error:
             print(f"[全境征才] 批次收尾失败：{error}", flush=True)
@@ -821,6 +835,64 @@ def _selection_approval(session, decision):
     return True, None
 
 
+def _tag_list(tags):
+    return "、".join(f"【{tag}】" for tag in tags) or "无"
+
+
+def _recruitment_plan_summary(decision):
+    prefix = f"第{decision['slot']}栏：检测到{_tag_list(decision['visible_tags'])}。"
+    action = decision["action"]
+    if action == "skip_leader":
+        return prefix + "发现【领袖】，保留这些词条，跳过本栏，不开始征才。"
+    if action == "refresh":
+        return prefix + f"没有SR保底组合，暂不选词条，准备刷新；今日还可刷新{decision['refresh_count']}次。"
+    if action == "recruit_guaranteed":
+        choice = decision["choice"]
+        return (
+            prefix + f"准备选择{_tag_list(choice['tags'])}，进行9小时征才；"
+            + f"按当前角色池预计至少SR，可能招到：{'、'.join(choice['matches'])}。"
+        )
+    reason = "今日刷新次数已用完" if decision["decision_basis"] == "refreshes_exhausted" else "本栏已达到刷新上限"
+    return prefix + f"没有SR保底组合，{reason}；不选择任何词条，准备进行默认1小时征才。"
+
+
+def _recruitment_outcome_summary(decision):
+    prefix = f"第{decision['slot']}栏：检测到{_tag_list(decision['visible_tags'])}；"
+    if decision["action"] == "skip_leader":
+        return prefix + "未选词条，已确认保留【领袖】，本栏没有开始征才"
+    if decision["action"] == "recruit_fallback":
+        return prefix + "未选任何词条，已确认开始默认1小时征才，不保证SR，尚未确认获得的角色"
+    return (
+        prefix + f"实际选中{_tag_list(decision['selected_tags'])}，已确认开始9小时征才；"
+        + "按当前角色池预计至少SR，尚未确认获得的角色"
+    )
+
+
+def _report_recruitment_decision(session, decision, mode, allowed):
+    if not allowed:
+        return
+    message = None
+    if mode == "ready":
+        message = _recruitment_plan_summary(decision)
+        if decision.get("refresh_before"):
+            message = "已确认刷新成功。" + message
+    elif mode == "submit":
+        session["submitted"] = dict(decision)
+        selected = _tag_list(decision.get("selected_tags", []))
+        message = (
+            f"第{decision['slot']}栏：已确认选中{selected}，正在提交9小时征才；等待确认是否开始。"
+            if decision["action"] == "recruit_guaranteed"
+            else f"第{decision['slot']}栏：不选择词条，正在提交默认1小时征才；等待确认是否开始。"
+        )
+    elif mode == "skip_leader":
+        session["submitted"] = dict(decision)
+    if message:
+        reported = session.setdefault("reported", {})
+        if reported.get(mode) != message:
+            print(f"[全境征才] {message}", flush=True)
+            reported[mode] = message
+
+
 def _decision_result(box, decision, mode):
     choice = decision.get("choice") or {}
     decision["mode"] = mode
@@ -929,4 +1001,5 @@ class DailyRecruitDecision(CustomRecognition):
                         box = _tag_box(decision, index)
                     else:
                         decision["reason"] = "tag_already_selected" if tag in selected else "tag_not_selected"
+        _report_recruitment_decision(session, decision, mode, box is not None)
         return _decision_result(box, decision, mode)
