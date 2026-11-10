@@ -107,5 +107,6 @@
 ## 开发配置迁移
 
 - 任务与预览统一截图：启动前逐实例设置 `UseSeparateScreenshotTasker=false`，保留已有 MuMu 截图方式。关闭独立预览连接，启动扩展为新实例补充同一策略，运行或暂停时不热切换。实现和限制见 `docs/zh_cn/tasks/shared_capture.md`。
+- 默认正常关闭请求最多等待30秒；运行及暂停中的任务均可能触发前端退出确认。用户明确授权后可用 `tools/run_dev.ps1 -ForceRestart` 跳过应用退出确认，先把已保存的 Interface、appsettings 与完整 config 备份到 `install/backup/dev-run-*/before-force/`，再仅结束完整路径对应本工作区的助手及执行本项目 Agent 脚本的 Python 进程。结束前再次核对进程创建时间、路径及命令行，防止 PID 复用；不结束模拟器或其他项目。
 - `tools/run_dev.ps1` 正常关闭前端后备份运行界面和待迁移实例配置，再调用 `tools/migrate_runtime_options.py`。迁移移除启动任务和立即开关，保留服务器、各征才步骤次数及其他用户设置；标记版本后重复启动不再覆盖选择。
-- 迁移失败不启动前端；旧前端不能正常退出时不改运行配置、不强杀。备份位于 `install/backup/dev-run-*/`。
+- 迁移失败不启动前端；默认模式旧前端不能正常退出时不改运行配置。强制重启会中断当前队列，未持久化的界面修改可能丢失；新进程只打开界面，不自动恢复任务。备份位于 `install/backup/dev-run-*/`。

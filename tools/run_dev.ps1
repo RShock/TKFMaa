@@ -1,6 +1,8 @@
 #Requires -Version 7.4
 [CmdletBinding()]
-param()
+param(
+    [switch]$ForceRestart
+)
 
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -9,6 +11,7 @@ $frontendPath = Join-Path $runtimeRoot 'MFAAvalonia.exe'
 $pythonPath = Join-Path $projectRoot '.venv312/Scripts/python.exe'
 $sourceInterfacePath = Join-Path $projectRoot 'assets/interface.json'
 $runtimeInterfacePath = Join-Path $runtimeRoot 'interface.json'
+$backupRoot = Join-Path $runtimeRoot ('backup/dev-run-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fffffff'))
 $nativePath = Join-Path $runtimeRoot 'runtimes/win-x64/native'
 if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') {
     $nativePath = Join-Path $runtimeRoot 'runtimes/win-arm64/native'
@@ -32,19 +35,66 @@ $interface.agent.child_args = @((Join-Path $projectRoot 'agent/main.py'))
 $interface.name = "$($interface.name)（开发版）"
 $interface.version = "$($interface.version)-dev"
 
-# Close only this checkout's frontend gracefully, so its cached interface and
-# Agent cannot keep running an older revision. Never force-kill a user process.
-$runningFrontends = @(Get-Process -Name 'MFAAvalonia' -ErrorAction SilentlyContinue |
-    Where-Object { $_.Path -eq $frontendPath })
-foreach ($frontend in $runningFrontends) {
-    if (-not $frontend.CloseMainWindow() -or -not $frontend.WaitForExit(10000)) {
-        throw '前端尚未退出。请停止任务并完整关闭助手后，再运行 tools/run_dev.ps1。未更新运行配置。'
+# Forced restart is explicit: back up persisted settings before interrupting the
+# frontend. Match full paths and Agent script arguments, never process names alone.
+if ($ForceRestart) {
+    $forceBackupRoot = Join-Path $backupRoot 'before-force'
+    New-Item -ItemType Directory -Path $forceBackupRoot -Force | Out-Null
+    foreach ($stateFile in @($runtimeInterfacePath, (Join-Path $runtimeRoot 'appsettings.json'))) {
+        if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
+            Copy-Item -LiteralPath $stateFile -Destination $forceBackupRoot
+        }
+    }
+    $configRoot = Join-Path $runtimeRoot 'config'
+    if (Test-Path -LiteralPath $configRoot -PathType Container) {
+        Copy-Item -LiteralPath $configRoot -Destination (Join-Path $forceBackupRoot 'config') -Recurse
+    }
+    Write-Output "强制重启前的配置已备份：$forceBackupRoot"
+
+    $agentScriptPath = (Join-Path $projectRoot 'agent/main.py').Replace('\', '/')
+    $agentArgumentPattern = '(?i)(?:^|[\s"])' + [regex]::Escape($agentScriptPath) + '(?=[\s"]|$)'
+    $processSnapshot = @(Get-CimInstance Win32_Process -Filter "Name = 'MFAAvalonia.exe' OR Name = 'python.exe' OR Name = 'pythonw.exe'")
+    $forceTargets = @($processSnapshot | Where-Object { $_.ExecutablePath -ieq $frontendPath }) +
+        @($processSnapshot | Where-Object {
+            $_.Name -in @('python.exe', 'pythonw.exe') -and
+            $_.CommandLine -and $_.CommandLine.Replace('\', '/') -match $agentArgumentPattern
+        })
+    foreach ($snapshot in $forceTargets) {
+        $targetProcessId = [int]$snapshot.ProcessId
+        $current = Get-CimInstance Win32_Process -Filter "ProcessId = $targetProcessId"
+        if ($null -eq $current) { continue }
+        if ($current.CreationDate -ne $snapshot.CreationDate -or
+            $current.ExecutablePath -ine $snapshot.ExecutablePath -or
+            $current.CommandLine -cne $snapshot.CommandLine) {
+            throw "进程身份已变化，未结束 PID $targetProcessId；请重新运行启动脚本。"
+        }
+        $targetProcess = Get-Process -Id $targetProcessId -ErrorAction SilentlyContinue
+        if ($null -eq $targetProcess) { continue }
+        try {
+            Stop-Process -InputObject $targetProcess -Force
+        }
+        catch {
+            if (-not $targetProcess.HasExited) { throw }
+        }
+        if (-not $targetProcess.WaitForExit(10000)) {
+            throw "强制结束后进程仍未退出（PID $targetProcessId），未启动第二个助手。"
+        }
+        Write-Output "已强制结束本工作区进程：$($snapshot.Name)，PID：$targetProcessId"
     }
 }
 
-$backupRoot = Join-Path $runtimeRoot ('backup/dev-run-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fffffff'))
+# Without -ForceRestart, retain the normal graceful-close behavior.
+$runningFrontends = @(Get-Process -Name 'MFAAvalonia' -ErrorAction SilentlyContinue |
+    Where-Object { $_.Path -eq $frontendPath })
+foreach ($frontend in $runningFrontends) {
+    Write-Output '正在请求旧助手退出；暂停中的任务仍被前端视为运行中，如出现退出确认，请在助手中确认。'
+    if (-not $frontend.CloseMainWindow() -or -not $frontend.WaitForExit(30000)) {
+        throw '旧助手未完成退出，可能正在等待退出确认。可停止任务并关闭助手，或在明确允许中断任务时使用 tools/run_dev.ps1 -ForceRestart。未更新运行配置。'
+    }
+}
+
 if (Test-Path -LiteralPath $runtimeInterfacePath -PathType Leaf) {
-    New-Item -ItemType Directory -Path $backupRoot | Out-Null
+    New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
     Copy-Item -LiteralPath $runtimeInterfacePath -Destination (Join-Path $backupRoot 'interface.json')
 }
 & $pythonPath (Join-Path $projectRoot 'tools/migrate_runtime_options.py') `
@@ -60,6 +110,7 @@ $interfaceJson = ($interface | ConvertTo-Json -Depth 100) + "`n"
 $frontendProcess = Start-Process -FilePath $frontendPath -WorkingDirectory $runtimeRoot -PassThru `
     -WindowStyle Normal -Environment @{ MAAFW_BINARY_PATH = $nativePath; PYTHONUTF8 = '1' }
 Write-Output "已启动开发版，PID：$($frontendProcess.Id)"
+Write-Output '任务识别与实时预览共用一个截图控制器，不再另建预览连接。'
 Write-Output "资源：$(Join-Path $projectRoot 'assets/resource')"
 Write-Output "Agent：$(Join-Path $projectRoot 'agent/main.py')"
 Write-Output '未传入自动执行参数；请在界面中手动运行需要验证的任务。'
