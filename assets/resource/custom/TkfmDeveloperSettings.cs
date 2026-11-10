@@ -87,6 +87,13 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
 
     private static void ForceGithubConfiguration()
     {
+        // This fork is maintained locally. Never let upstream updates replace it.
+        foreach (string setting in new[] {
+                     ConfigurationKeys.EnableCheckVersion,
+                     ConfigurationKeys.EnableAutoUpdateResource,
+                     ConfigurationKeys.EnableAutoUpdateMFA })
+            if (ConfigurationManager.Current.GetValue(setting, true))
+                ConfigurationManager.Current.SetValue(setting, false);
         if (ConfigurationManager.Current.GetValue(ConfigurationKeys.DownloadSourceIndex, 1) != 0)
             ConfigurationManager.Current.SetValue(ConfigurationKeys.DownloadSourceIndex, 0);
         string encryptedCdk = ConfigurationManager.Current.GetValue(
@@ -230,6 +237,14 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
     private static void ApplyGithubOnly(VersionUpdateSettingsUserControl view)
     {
         if (!(view.DataContext is VersionUpdateSettingsUserControlModel model)) return;
+        model.EnableCheckVersion = false;
+        model.EnableAutoUpdateResource = false;
+        model.EnableAutoUpdateMFA = false;
+        foreach (var toggle in view.GetVisualDescendants().OfType<ToggleSwitch>())
+        {
+            toggle.IsEnabled = false;
+            ToolTip.SetTip(toggle, "本地魔改版本已关闭自动检查和自动更新，请手动管理版本。");
+        }
         if (model.DownloadSourceIndex != 0) model.DownloadSourceIndex = 0;
         if (!string.IsNullOrEmpty(model.CdkPassword)) model.CdkPassword = string.Empty;
 

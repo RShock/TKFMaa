@@ -11,6 +11,7 @@ $frontendPath = Join-Path $runtimeRoot 'MFAAvalonia.exe'
 $pythonPath = Join-Path $projectRoot '.venv312/Scripts/python.exe'
 $sourceInterfacePath = Join-Path $projectRoot 'assets/interface.json'
 $runtimeInterfacePath = Join-Path $runtimeRoot 'interface.json'
+$globalConfigPath = Join-Path $runtimeRoot 'config/config.json'
 $backupRoot = Join-Path $runtimeRoot ('backup/dev-run-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fffffff'))
 $nativePath = Join-Path $runtimeRoot 'runtimes/win-x64/native'
 if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') {
@@ -97,11 +98,27 @@ if (Test-Path -LiteralPath $runtimeInterfacePath -PathType Leaf) {
     New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
     Copy-Item -LiteralPath $runtimeInterfacePath -Destination (Join-Path $backupRoot 'interface.json')
 }
+if (Test-Path -LiteralPath $globalConfigPath -PathType Leaf) {
+    New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+    Copy-Item -LiteralPath $globalConfigPath -Destination (Join-Path $backupRoot 'config.json')
+}
 & $pythonPath (Join-Path $projectRoot 'tools/migrate_runtime_options.py') `
     --instances (Join-Path $runtimeRoot 'config/instances') --backup (Join-Path $backupRoot 'instances')
 if ($LASTEXITCODE -ne 0) {
     throw '实例配置迁移未完成，未启动开发版；原配置备份保留在 install/backup/。'
 }
+# Persist before launch: custom extensions load after the frontend's startup
+# settings, so disabling checks only inside an extension would be too late.
+$globalConfig = if (Test-Path -LiteralPath $globalConfigPath -PathType Leaf) {
+    Get-Content -LiteralPath $globalConfigPath -Raw -Encoding utf8 |
+        ConvertFrom-Json -AsHashtable -Depth 100
+} else { @{} }
+foreach ($setting in @('EnableCheckVersion', 'EnableAutoUpdateResource', 'EnableAutoUpdateMFA')) {
+    $globalConfig[$setting] = $false
+}
+New-Item -ItemType Directory -Path (Split-Path $globalConfigPath -Parent) -Force | Out-Null
+[IO.File]::WriteAllText($globalConfigPath, ($globalConfig | ConvertTo-Json -Depth 100) + "`n",
+    [Text.UTF8Encoding]::new($false))
 $interfaceJson = ($interface | ConvertTo-Json -Depth 100) + "`n"
 [IO.File]::WriteAllText($runtimeInterfacePath, $interfaceJson, [Text.UTF8Encoding]::new($false))
 
@@ -110,6 +127,7 @@ $interfaceJson = ($interface | ConvertTo-Json -Depth 100) + "`n"
 $frontendProcess = Start-Process -FilePath $frontendPath -WorkingDirectory $runtimeRoot -PassThru `
     -WindowStyle Normal -Environment @{ MAAFW_BINARY_PATH = $nativePath; PYTHONUTF8 = '1' }
 Write-Output "已启动开发版，PID：$($frontendProcess.Id)"
+Write-Output '已关闭启动版本检查、资源自动更新及前端自动更新。'
 Write-Output '任务识别与实时预览共用一个截图控制器，不再另建预览连接。'
 Write-Output "资源：$(Join-Path $projectRoot 'assets/resource')"
 Write-Output "Agent：$(Join-Path $projectRoot 'agent/main.py')"

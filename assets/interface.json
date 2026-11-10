@@ -2,10 +2,10 @@
     "interface_version": 2,
     "name": "TKFMaa",
     "description": "天下布魔小助手~",
-    "contact": "https://github.com/cccrx1/TKFMaa/issues",
+    "contact": "https://github.com/RShock/TKFMaa/issues",
     "license": "MIT",
     "welcome": "",
-    "github": "https://github.com/cccrx1/TKFMaa",
+    "github": "https://github.com/RShock/TKFMaa",
     "version": "1.0.2",
     "controller": [
         {

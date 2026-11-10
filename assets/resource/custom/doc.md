@@ -7,6 +7,7 @@
 
 ## 更新源与更新渠道
 
+- 本地魔改版本关闭版本自动检查、资源自动更新和前端自动更新，对应 `EnableCheckVersion`、`EnableAutoUpdateResource`、`EnableAutoUpdateMFA` 均为 false；更新页三个自动开关保持关闭并禁用。开发启动脚本须在启动前备份并写入全局配置，避免扩展加载晚于首次检查；扩展加载后保持该策略。手动更新操作保留，资源仓库及问题反馈元信息指向 `RShock/TKFMaa`。
 - 开发者设置随连接初始化把前端下载源固定为 GitHub，并清理 `DownloadSourceIndex` 与 `DownloadCDK`；更新页隐藏下载源下拉框、CDK、购买链接和到期提示，只保留 GitHub Token、代理及资源更新操作。不能只隐藏 Mirror 选项而不改已保存索引，否则仍可能从 Mirror 下载。
 - 资源更新渠道仍是前端可见的 Alpha、Beta、Stable。三者不是不同分支，而是同一仓库 GitHub Release 的筛选条件：Stable 排除预发布，Beta 接受 beta 与 stable、排除 alpha，Alpha 接受全部；当前 UI 更新渠道控件由固定前端自身隐藏。
 - MFAAvalonia 2.16.2 的发布工作流按 `v*` tag 创建同一仓库的 GitHub Release，tag 含 `-` 时标记为预发布。因此可用 `alpha`、`beta` tag 表示内测、公测，正式版用不带后缀的 tag；不能把“公测版/内测版”描述成独立代码分支。
