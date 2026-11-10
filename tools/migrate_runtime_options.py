@@ -1,4 +1,4 @@
-"""Preserve saved task choices when retiring startup and immediate-recruit switches."""
+"""Preserve task choices and use one controller for task and preview capture."""
 
 import argparse
 import copy
@@ -18,6 +18,8 @@ def find_count(options):
 
 
 def migrate(config):
+    # This also applies to instances whose task choices were already migrated.
+    config["UseSeparateScreenshotTasker"] = False
     if config.get("TkfmGameOptionsV2") is True:
         return
     tasks = config.get("TaskItems", [])

@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using MaaFramework.Binding;
 using MaaFramework.Binding.Custom;
 using MFAAvalonia.Extensions.MaaFW;
+using MFAAvalonia.Helper;
 using MFAAvalonia.ViewModels.Pages;
 
 // Loaded by MFAAvalonia's existing custom-action compiler. Never runs a game action.
@@ -16,6 +17,8 @@ public sealed class TkfmStartupLogFix : IMaaCustomAction
 
     public TkfmStartupLogFix()
     {
+        // Apply before onlyStart completes and the frontend warms up preview.
+        TkfmStartupLogFixService.ConfigureSharedCapture();
         // Consume the auto-connect onlyStart completion synchronously. Waiting for
         // the UI dispatcher can race with the short startup connection task.
         TkfmStartupLogFixService.SuppressCurrentStartupCompletion();
@@ -32,6 +35,7 @@ public sealed class TkfmStartupLogFix : IMaaCustomAction
 
 internal sealed class TkfmStartupLogFixService : IDisposable
 {
+    private const string SeparateCaptureSetting = "UseSeparateScreenshotTasker";
     // EmulatorExtras can return no frame briefly while the emulator finishes its
     // first native capture setup. Keep the normal warning for failures that persist
     // beyond this short connection grace period.
@@ -71,12 +75,33 @@ internal sealed class TkfmStartupLogFixService : IDisposable
         }
     }
 
+    internal static void ConfigureSharedCapture()
+    {
+        foreach (var processor in MaaProcessor.Processors.ToArray())
+        {
+            try
+            {
+                // Hot reload must not switch controllers underneath a running
+                // or paused native task. Apply on its next idle pass instead.
+                if (processor.MaaTasker?.IsRunning == true) continue;
+                if (!processor.InstanceConfiguration.GetValue(SeparateCaptureSetting, true)) continue;
+                processor.InstanceConfiguration.SetValue(SeparateCaptureSetting, false);
+                LoggerHelper.Info("TKFMaa：任务识别与实时预览共用截图控制器，已关闭独立预览连接。");
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Warning("TKFMaa 共享截图配置暂未应用：" + ex.Message);
+            }
+        }
+    }
+
     private void Refresh(object? sender, EventArgs args)
     {
         if (disposed) return;
 
         try
         {
+            ConfigureSharedCapture();
             foreach (var processor in MaaProcessor.Processors.ToArray())
             {
                 if (!processors.TryGetValue(processor, out var state))

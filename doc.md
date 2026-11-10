@@ -105,5 +105,6 @@
 
 ## 开发配置迁移
 
+- 任务与预览统一截图：启动前逐实例设置 `UseSeparateScreenshotTasker=false`，保留已有 MuMu 截图方式。关闭独立预览连接，启动扩展为新实例补充同一策略，运行或暂停时不热切换。实现和限制见 `docs/zh_cn/tasks/shared_capture.md`。
 - `tools/run_dev.ps1` 正常关闭前端后备份运行界面和待迁移实例配置，再调用 `tools/migrate_runtime_options.py`。迁移移除启动任务和立即开关，保留服务器、各征才步骤次数及其他用户设置；标记版本后重复启动不再覆盖选择。
 - 迁移失败不启动前端；旧前端不能正常退出时不改运行配置、不强杀。备份位于 `install/backup/dev-run-*/`。
