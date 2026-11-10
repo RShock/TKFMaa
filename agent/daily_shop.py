@@ -1,3 +1,5 @@
+import time
+
 from bootstrap import configure_runtime
 
 configure_runtime()
@@ -16,9 +18,12 @@ SHOP_COLUMNS = [
 ]
 
 _HANDLED_ITEM_KEYS = set()
+_OPENED_CARD_KEYS = set()
 _PENDING_TARGET = None
 _SCAN_STATES = {}
 MAX_DOWN_SCROLLS = 6
+MAX_PURCHASE_ATTEMPTS = 3
+PURCHASE_RETRY_INTERVAL = 2.0
 
 
 def _scan_state(shop_id):
@@ -87,6 +92,18 @@ def _purchase_button_match(context, image):
     if not _PENDING_TARGET:
         return CustomRecognition.AnalyzeResult(box=None, detail={"reason": "no_pending_item"})
 
+    attempts = _PENDING_TARGET.get("purchase_attempts", 0)
+    if attempts >= MAX_PURCHASE_ATTEMPTS:
+        return CustomRecognition.AnalyzeResult(
+            box=None,
+            detail={"reason": "purchase_attempt_limit_reached", "attempts": attempts},
+        )
+    if time.monotonic() < _PENDING_TARGET.get("purchase_retry_after", 0):
+        return CustomRecognition.AnalyzeResult(
+            box=None,
+            detail={"reason": "waiting_for_purchase_result", "attempts": attempts},
+        )
+
     result = context.run_recognition("__DailyShopPurchaseButton", image)
     if result is None or not result.hit:
         return CustomRecognition.AnalyzeResult(
@@ -95,35 +112,36 @@ def _purchase_button_match(context, image):
         )
 
     matches = list(getattr(result, "filtered_results", []) or [])
-    if not matches:
-        fallback = _box_tuple(getattr(result, "box", None))
-        if fallback is None:
-            return CustomRecognition.AnalyzeResult(
-                box=None, detail={"reason": "purchase_button_box_missing"}
-            )
-        return CustomRecognition.AnalyzeResult(
-            box=fallback,
-            detail={"reason": "purchase_button_matched", "score": _recognition_score(result)},
+    if matches:
+        best = max(
+            matches,
+            key=lambda entry: getattr(entry, "score", 0)
+            if isinstance(getattr(entry, "score", 0), (int, float))
+            else 0,
         )
-
-    best = max(
-        matches,
-        key=lambda entry: getattr(entry, "score", 0)
-        if isinstance(getattr(entry, "score", 0), (int, float))
-        else 0,
-    )
-    box = _box_tuple(getattr(best, "box", None))
-    if box is None:
+        box = _box_tuple(getattr(best, "box", None))
+        score = getattr(best, "score", None)
+    else:
+        box = _box_tuple(getattr(result, "box", None))
+        score = _recognition_score(result)
+    if box is None or box[2] < 16 or box[3] < 12:
         return CustomRecognition.AnalyzeResult(
             box=None, detail={"reason": "purchase_button_box_invalid"}
         )
+    x, y, width, height = box
+    click_box = (x + width // 2 - 8, y + height // 2 - 6, 16, 12)
     return CustomRecognition.AnalyzeResult(
-        box=box,
+        box=click_box,
         detail={
             "reason": "purchase_button_matched",
-            "score": getattr(best, "score", None),
+            "score": score,
+            "template_box": box,
+            "click_box": click_box,
+            "click_point": (x + width // 2, y + height // 2),
             "target": _PENDING_TARGET["target"],
             "selection_method": "TemplateMatch",
+            "attempt": attempts + 1,
+            "attempt_limit": MAX_PURCHASE_ATTEMPTS,
         },
     )
 
@@ -166,6 +184,31 @@ def _read_visible_items(context, image, targets, shop_id):
     if not slots:
         diagnostics.append({"reason": "card_anchors_unconfirmed", "shop_id": shop_id})
     for slot in slots:
+        sold_out_node = "__DailyShopSoldOut"
+        sold_out = context.run_recognition(
+            sold_out_node,
+            image,
+            {sold_out_node: {"recognition": {"param": {"roi": list(slot["card_roi"])}}}},
+        )
+        if sold_out is None or sold_out.hit:
+            diagnostics.append(
+                {
+                    "slot": slot["name"],
+                    "roi": slot["card_roi"],
+                    "reason": "sold_out" if sold_out is not None else "sold_out_check_failed",
+                    "sold_out_score": _recognition_score(sold_out),
+                    "checks": [],
+                }
+            )
+            if sold_out is not None:
+                state = _scan_state(shop_id)
+                key = (state["position"], slot["name"])
+                reported = state.setdefault("reported_sold_out", set())
+                if key not in reported:
+                    shop_name = "交易所" if shop_id == "exchange" else "协会商店"
+                    print(f"[商城购买] {shop_name}商品卡片检测到SOLD OUT，已售罄，跳过。", flush=True)
+                    reported.add(key)
+            continue
         matched_nodes = []
         checks = []
         for target in targets:
@@ -269,7 +312,7 @@ def _analyze_target_item(context, argv, default_shop_id):
             if target["node"] not in item["matched_nodes"]:
                 continue
             key = _item_key(shop_id, target, item)
-            if key in _HANDLED_ITEM_KEYS:
+            if key in _HANDLED_ITEM_KEYS or (shop_id, state["position"], item["slot"]) in _OPENED_CARD_KEYS:
                 skipped.append(
                     {
                         "target": target["raw"],
@@ -332,8 +375,9 @@ def _analyze_target_item(context, argv, default_shop_id):
 @AgentServer.custom_action("DailyShopResetExchangeSession")
 class DailyShopResetExchangeSession(CustomAction):
     def run(self, context, argv):
-        global _HANDLED_ITEM_KEYS, _PENDING_TARGET, _SCAN_STATES
+        global _HANDLED_ITEM_KEYS, _OPENED_CARD_KEYS, _PENDING_TARGET, _SCAN_STATES
         _HANDLED_ITEM_KEYS = set()
+        _OPENED_CARD_KEYS = set()
         _PENDING_TARGET = None
         _SCAN_STATES = {}
         return True
@@ -401,6 +445,34 @@ class DailyShopPurchaseButtonReady(CustomRecognition):
             return CustomRecognition.AnalyzeResult(
                 box=None, detail={"reason": "recognition_error", "error": str(error)}
             )
+
+
+@AgentServer.custom_action("DailyShopRecordPurchaseAttempt")
+class DailyShopRecordPurchaseAttempt(CustomAction):
+    def run(self, context, argv):
+        if not _PENDING_TARGET:
+            return False
+        attempts = _PENDING_TARGET.get("purchase_attempts", 0)
+        if attempts >= MAX_PURCHASE_ATTEMPTS:
+            return False
+        # The Pipeline reaches this node only after a Click succeeds. A matching
+        # button alone must not consume attempts or record a completed purchase.
+        _PENDING_TARGET["purchase_attempts"] = attempts + 1
+        _PENDING_TARGET["purchase_retry_after"] = time.monotonic() + PURCHASE_RETRY_INTERVAL
+        return True
+
+
+@AgentServer.custom_action("DailyShopRecordTargetOpened")
+class DailyShopRecordTargetOpened(CustomAction):
+    def run(self, context, argv):
+        if not _PENDING_TARGET:
+            return False
+        # A successful input does not prove a detail opened. If the list remains,
+        # do not select this same candidate again; keep pending for detail/reward handling.
+        _HANDLED_ITEM_KEYS.add(_PENDING_TARGET["key"])
+        shop_id, _, position, slot = _PENDING_TARGET["key"]
+        _OPENED_CARD_KEYS.add((shop_id, position, slot))
+        return True
 
 
 @AgentServer.custom_action("DailyShopMarkTargetPurchased")
