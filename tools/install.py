@@ -17,7 +17,7 @@ from configure import configure_ocr_model
 
 working_dir = Path(__file__).parent.parent.resolve()
 install_path = working_dir / Path("install")
-version = len(sys.argv) > 1 and sys.argv[1] or "v0.0.1"
+version = len(sys.argv) > 1 and sys.argv[1] or "v1.0"
 
 # the first parameter is self name
 if sys.argv.__len__() < 4:
@@ -130,6 +130,21 @@ def install_resource():
 
 
 def install_chores():
+    # A clean release must disable upstream checks before custom extensions load.
+    # Only write release defaults; never copy a maintainer's local configuration.
+    config_path = install_path / "config" / "config.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with config_path.open("w", encoding="utf-8") as f:
+        jsonc.dump(
+            {
+                "EnableCheckVersion": False,
+                "EnableAutoUpdateResource": False,
+                "EnableAutoUpdateMFA": False,
+            },
+            f,
+            ensure_ascii=False,
+            indent=4,
+        )
     shutil.copy2(
         working_dir / "README.md",
         install_path,

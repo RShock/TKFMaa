@@ -1,8 +1,8 @@
-# TKFMaa 模块要求
+# TKFMaaR 模块要求
 
 ## 魔改 Fork 维护
 
-- 个人 Fork 为 `RShock/TKFMaa`，本地 `origin` 指向该仓库；`upstream` 保留 `cccrx1/TKFMaa` 作为来源并禁用推送。
+- 个人 Fork 为 `RShock/TKFMaaR`，本地 `origin` 指向该仓库；`upstream` 保留 `cccrx1/TKFMaa` 作为来源并禁用推送。
 - 魔改版本独立维护，不默认同步或合并上游，不向上游创建 PR。提交按模块拆分，运行配置、日志、私人关卡截图和误生成文件不进入版本控制；远程操作遵循用户明确授权。
 
 ## 启动游戏
@@ -111,3 +111,9 @@
 - 默认正常关闭请求最多等待30秒；运行及暂停中的任务均可能触发前端退出确认。用户明确授权后可用 `tools/run_dev.ps1 -ForceRestart` 跳过应用退出确认，先把已保存的 Interface、appsettings 与完整 config 备份到 `install/backup/dev-run-*/before-force/`，再仅结束完整路径对应本工作区的助手及执行本项目 Agent 脚本的 Python 进程。结束前再次核对进程创建时间、路径及命令行，防止 PID 复用；不结束模拟器或其他项目。
 - `tools/run_dev.ps1` 正常关闭前端后备份运行界面和待迁移实例配置，再调用 `tools/migrate_runtime_options.py`。迁移移除启动任务和立即开关，保留服务器、各征才步骤次数及其他用户设置；标记版本后重复启动不再覆盖选择。
 - 迁移失败不启动前端；默认模式旧前端不能正常退出时不改运行配置。强制重启会中断当前队列，未持久化的界面修改可能丢失；新进程只打开界面，不自动恢复任务。备份位于 `install/backup/dev-run-*/`。
+
+## 发布构建
+
+- 对外名称为 `TKFMaaR`，当前版本为 `1.0`，正式发布标签为 `v1.0`。软件仓库、更新源、问题反馈与发布说明统一使用 `RShock/TKFMaaR`；上游仅保留来源署名。
+- GitHub Actions 从干净检出组装固定 MaaFramework 5.14.3、MFAAvalonia 2.16.2 与 Python 3.12；包名以 `TKFMaaR-` 开头，普通分支生成 Artifact，`v*` 标签生成 Release。正式版标签兼容两段及三段版本号，只有发布 job 获得 contents 写入权限。
+- 发布包写入关闭自动检查、资源自动更新和前端自动更新的全局默认配置；不得从维护者 install 目录打包配置、日志、备份或私人关卡截图。构建成功只代表包已生成，不代表实机流程通过。

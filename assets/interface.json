@@ -1,12 +1,12 @@
 {
     "interface_version": 2,
-    "name": "TKFMaa",
+    "name": "TKFMaaR",
     "description": "天下布魔小助手~",
-    "contact": "https://github.com/RShock/TKFMaa/issues",
+    "contact": "https://github.com/RShock/TKFMaaR/issues",
     "license": "MIT",
     "welcome": "",
-    "github": "https://github.com/RShock/TKFMaa",
-    "version": "1.0.2",
+    "github": "https://github.com/RShock/TKFMaaR",
+    "version": "1.0",
     "controller": [
         {
             "name": "安卓端",

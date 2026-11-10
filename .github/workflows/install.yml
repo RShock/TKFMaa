@@ -1,5 +1,8 @@
 name: install
 
+permissions:
+  contents: read
+
 env:
   # 版本控制：
   # - 设置 VERSION 为空字符串时，下载 latest 版本
@@ -268,7 +271,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: TKFMaa-${{ matrix.os }}-${{ matrix.arch }}
+          name: TKFMaaR-${{ matrix.os }}-${{ matrix.arch }}
           path: "install"
 
   changelog:
@@ -292,7 +295,7 @@ jobs:
           # 预发布版：正常生成，只包含从上一个标签以来的提交
           args: >-
             -vv --latest --strip header
-            ${{ needs.meta.outputs.is_prerelease == 'false' && '--tag-pattern "^v[0-9]+\\.[0-9]+\\.[0-9]+$"' || '' }}
+            ${{ needs.meta.outputs.is_prerelease == 'false' && '--tag-pattern "^v[0-9]+\\.[0-9]+(\\.[0-9]+)?$"' || '' }}
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
@@ -301,6 +304,8 @@ jobs:
     if: ${{ needs.meta.outputs.is_release == 'true' }}
     needs: [meta, install, changelog]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -314,8 +319,9 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: assets/*
+          files: assets/*.zip
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
           prerelease: ${{ needs.meta.outputs.is_prerelease == 'true' }}
+          make_latest: ${{ needs.meta.outputs.is_prerelease == 'false' && 'true' || 'false' }}

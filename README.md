@@ -1,21 +1,25 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <p align="center">
-  <img alt="TKFMaa" src="assets/logo.png" width="256" height="256" />
+  <img alt="TKFMaaR" src="assets/logo.png" width="256" height="256" />
 </p>
 
 <div align="center">
 
-# TKFMaa
+# TKFMaaR
 
 基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 的「天下布魔」日常自动化助手
+
+RShock 维护版本，当前版本 **1.0**，在原 TKFMaa 项目基础上独立维护。
 
 </div>
 
 ## 安装与使用
 
-1. 下载最新 Release 压缩包并解压
+1. 从 [RShock/TKFMaaR Releases](https://github.com/RShock/TKFMaaR/releases/latest) 下载对应系统的完整压缩包并解压，普通 Windows 电脑选择 `TKFMaaR-win-x86_64-v1.0.zip`
 2. 运行 `DependencySetup_依赖库安装_win.bat`
 3. 运行 `MFAAvalonia.exe`
+
+发布包包含 Python 3.12、MaaFramework 5.14.3 与 MFAAvalonia 2.16.2。自动检查和自动更新默认关闭；后续手动检查更新使用 `RShock/TKFMaaR`，不使用原项目的发布源。
 
 ## 注意事项
 
