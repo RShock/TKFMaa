@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using MaaFramework.Binding;
 using MaaFramework.Binding.Custom;
-using MaaFramework.Binding.Buffers;
 using MFAAvalonia.Configuration;
 using MFAAvalonia.Extensions.MaaFW;
 using MFAAvalonia.Helper;
@@ -247,7 +246,7 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                 ["action"] = new JObject { ["type"] = "StartApp", ["param"] = new JObject { ["package"] = package } }
             },
             // StopTask propagates to the parent context and would prevent rerunning the failed module.
-            // Finish only this login subtask after its normal advertisement and main-page confirmations.
+            // Finish only this login subtask after closing the advertisement and recognizing Expedition.
             ["GameMainReady"] = new JObject { ["action"] = new JObject { ["type"] = "DoNothing" }, ["next"] = new JArray() }
         };
     }
@@ -261,10 +260,15 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
         {
             var overrides = LoginOverride(context, processor);
             string package = (string)overrides["GameLoginLaunch"]["action"]["param"]["package"];
-            var device = processor.InstanceConfiguration.GetValue("AdbDevice", new JObject());
-            string adb = (string)device["AdbPath"], serial = (string)device["AdbSerial"];
+            // Use the same active configuration as MFA's controller. The persisted value
+            // may be an AdbDeviceInfo in memory, so GetValue<JObject> can return an empty default.
+            var device = processor.Config.AdbDevice;
+            string adb = device.AdbPath, serial = device.AdbSerial;
             if (string.IsNullOrWhiteSpace(adb) || string.IsNullOrWhiteSpace(serial))
-                throw new InvalidOperationException("所选 ADB 设备配置不完整");
+                throw new InvalidOperationException("所选 ADB 设备配置不完整："
+                    + (string.IsNullOrWhiteSpace(adb) ? "ADB 路径缺失；" : "")
+                    + (string.IsNullOrWhiteSpace(serial) ? "设备地址缺失；" : "")
+                    + "请重新选择并连接设备");
             // A shell always returns success after emitting a marker, so a transport failure
             // cannot be confused with the ordinary pidof exit status for a stopped game.
             string output = AdbOutput(adb, serial,
@@ -275,7 +279,8 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
             if (!running)
             {
                 processor.AddLog("[自动启动] 所选游戏未运行，启动并完成登录。", changeColor: false);
-                if (!RunOnce(context, processor, "GameLoginLaunch", overrides.ToString(Formatting.None))) return false;
+                if (!RunAttempt(context, processor, "GameLoginLaunch",
+                    new[] { "GameMainReady" }, overrides.ToString(Formatting.None))) return false;
             }
             else
             {
@@ -291,21 +296,15 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                     bringForward["GameLoginLaunch"]["next"] = new JArray();
                     if (!RunOnce(context, processor, "GameLoginLaunch", bringForward.ToString(Formatting.None))) return false;
                 }
-                // A live process may still be at the title/network dialog. Recognize these
-                // known login screens, while preserving an already-open task page.
-                context.Tasker.Controller.Screencap().Wait();
-                using (var image = new MaaImageBuffer())
-                {
-                    if (!context.Tasker.Controller.GetCachedImage(image))
-                        throw new InvalidOperationException("无法取得启动状态截图");
-                    using (var login = context.RunRecognition("GameLoginNeedsCompletion", image))
-                    {
-                        if (login == null) throw new InvalidOperationException("无法识别启动状态");
-                        if (login.Hit && !RunOnce(context, processor, "GameLoginAfterAdvertisement",
-                            overrides.ToString(Formatting.None))) return false;
-                    }
-                }
-                processor.AddLog("[自动启动] 游戏已运行，继续当前任务。", changeColor: false);
+                // Main-page buttons may appear before a delayed startup advertisement.
+                // Use the same advertisement gate as a fresh launch; only the post-close
+                // Expedition recognition may finish preparation for this queue.
+                processor.AddLog("[自动启动] 已检测到游戏进程，等待关闭启动广告；提前出现出征或召唤不代表启动完成。",
+                    changeColor: false);
+                if (!RunAttempt(context, processor, "GameLoginEnsureReady",
+                    new[] { "GameMainReady" }, overrides.ToString(Formatting.None)))
+                    return false;
+                processor.AddLog("[自动启动] 已关闭启动广告并识别到出征，继续当前任务。", changeColor: false);
             }
             if (Cancelled(context, processor)) return false;
             MarkGamePrepared(processor);
