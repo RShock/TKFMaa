@@ -71,57 +71,44 @@
                 ]
             }
         },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
-        },
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyAlchemyOrdersCollect"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        }
     },
     "DailyAlchemyOrdersCollect": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "expected": [
-                    "一键收取",
-                    "键收取"
+                "all_of": [
+                    "__DailyAlchemyOrdersPageReady",
+                    "__DailyAlchemyOrdersCollectButton"
                 ],
-                "roi": [
-                    390,
-                    750,
-                    210,
-                    90
-                ]
+                "box_index": 1
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
-        },
-        "post_wait_freezes": {
-            "time": 600,
-            "target": [
-                0,
-                0,
-                0,
-                0
-            ]
         },
         "next": [
             "[JumpBack]CommonCloseReward",
             "DailyAlchemyOrdersScanOrder"
         ],
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        }
     },
     "DailyAlchemyOrdersScanOrder": {
         "next": [
@@ -137,53 +124,38 @@
     },
     "DailyAlchemyOrdersDeliverVisibleOrder": {
         "recognition": {
-            "type": "ColorMatch",
+            "type": "And",
             "param": {
-                "roi": [
-                    25,
-                    940,
-                    670,
-                    70
+                "all_of": [
+                    "__DailyAlchemyOrdersPageReady",
+                    "__DailyAlchemyOrdersDeliverable"
                 ],
-                "method": 40,
-                "lower": [
-                    15,
-                    80,
-                    120
-                ],
-                "upper": [
-                    45,
-                    255,
-                    255
-                ],
-                "count": 120,
-                "connected": true,
-                "order_by": "Horizontal"
+                "box_index": 1
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    85,
-                    1040
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true,
+                "target_offset": [
+                    67,
+                    76,
+                    0,
+                    0
                 ]
             }
-        },
-        "post_wait_freezes": {
-            "time": 700,
-            "target": [
-                20,
-                930,
-                130,
-                220
-            ]
         },
         "next": [
             "DailyAlchemyOrdersAwaitDeliveryResult"
         ],
-        "max_hit": 9,
-        "pre_wait_freezes": 300,
+        "max_hit": 10,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
         "on_error": [
             "DailyAlchemyOrdersAbortToMain"
         ]
@@ -254,17 +226,16 @@
     },
     "__DailyAlchemyOrdersTitle": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "炼金"
-                ],
+                "template": "DailyAlchemyOrders/Title720.png",
                 "roi": [
-                    70,
-                    120,
-                    120,
-                    70
-                ]
+                    90,
+                    130,
+                    100,
+                    55
+                ],
+                "threshold": 0.9
             }
         }
     },
@@ -286,45 +257,33 @@
     },
     "__DailyAlchemyOrdersCollectButton": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": [
-                    "一键收取",
-                    "键收取"
-                ],
+                "template": "DailyAlchemyOrders/CollectButton720.png",
                 "roi": [
-                    390,
-                    750,
-                    210,
-                    90
-                ]
+                    380,
+                    765,
+                    225,
+                    75
+                ],
+                "threshold": 0.9
             }
         }
     },
     "__DailyAlchemyOrdersDeliverable": {
         "recognition": {
-            "type": "ColorMatch",
+            "type": "TemplateMatch",
             "param": {
+                "template": "DailyAlchemyOrders/DeliverableMarker720.png",
                 "roi": [
                     25,
-                    940,
-                    670,
-                    70
+                    938,
+                    525,
+                    52
                 ],
-                "method": 40,
-                "lower": [
-                    15,
-                    80,
-                    120
-                ],
-                "upper": [
-                    45,
-                    255,
-                    255
-                ],
-                "count": 120,
-                "connected": true,
-                "order_by": "Horizontal"
+                "threshold": 0.9,
+                "order_by": "Horizontal",
+                "index": 0
             }
         }
     },
@@ -377,11 +336,13 @@
     },
     "DailyAlchemyOrdersAwaitDeliveryResult": {
         "next": [
+            "[JumpBack]CommonWaitLoading",
             "DailyAlchemyOrdersCloseDeliveryReward"
         ],
         "timeout": 3500,
         "on_error": [
-            "DailyAlchemyOrdersDeliveryRetry"
+            "DailyAlchemyOrdersDeliveryRetry",
+            "DailyAlchemyOrdersAbortToMain"
         ]
     },
     "DailyAlchemyOrdersDeliverySucceeded": {
@@ -422,8 +383,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -441,5 +404,17 @@
         "next": [
             "DailyAlchemyOrdersDeliverySucceeded"
         ]
+    },
+    "__DailyAlchemyOrdersPageReady": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyAlchemyOrdersTitle",
+                    "__DailyAlchemyOrdersCount",
+                    "__DailyAlchemyOrdersCollectButton"
+                ]
+            }
+        }
     }
 }
