@@ -67,6 +67,15 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                 throw new InvalidOperationException("任务主体不存在或指向恢复入口自身：" + entry);
 
             processor.AddLog("[异常恢复] " + label + "：开始执行。", changeColor: false);
+            // Install error branches on this module's context, before preparation and retries.
+            // JumpBack retains the existing pipeline stack and business bookkeeping.
+            foreach (string popup in new[] { "TkfmRecoveryAdvertisement", "TkfmRecoveryAnnouncement",
+                "TkfmRecoveryEventSignIn", "TkfmRecoveryBackButton", "GameLoginBackFallback",
+                "GameLoginExistingGiftFallback" })
+                if (context.GetHitCount(popup, out var popupCount) && popupCount > 0 && !context.ClearHitCount(popup))
+                    throw new InvalidOperationException("无法初始化弹窗恢复额度：" + popup);
+            if (!context.OverridePipeline(PopupRecoveryOverride(context).ToString(Formatting.None)))
+                throw new InvalidOperationException("无法安装通用弹窗恢复分支");
             if (EnsureGameRunning(context, processor)
                 && RunAttempt(context, processor, entry, successAnyHit)) return !Cancelled(context, processor);
             if (Cancelled(context, processor)) return false;
@@ -211,6 +220,41 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
         }
     }
 
+    private static JObject PopupRecoveryOverride(IMaaContext context)
+    {
+        var overrides = new JObject();
+        foreach (string name in context.Tasker.Resource.NodeList)
+        {
+            // Recovery branches must not recursively recover themselves. Pure recognition
+            // helpers have no outgoing flow and are not task failure boundaries.
+            if (name.StartsWith("TkfmRecovery", StringComparison.Ordinal)
+                || name == "TkfmTaskFailure" || !context.GetNodeData(name, out var raw)) continue;
+            var node = JObject.Parse(raw);
+            if ((string)node["action"]?["param"]?["custom_action"] == "TkfmRunWithRecovery") continue;
+            var next = NodeList(node["next"]);
+            var original = NodeList(node["on_error"]);
+            if (next.Count == 0 && original.Count == 0) continue;
+            // A normal page can have the same arrow as an advertisement. Recognize the
+            // complete back button first so it uses navigation recovery and its truthful log.
+            var errors = new JArray("[JumpBack]TkfmRecoveryAnnouncement", "[JumpBack]TkfmRecoveryEventSignIn",
+                "[JumpBack]TkfmRecoveryBackButton", "[JumpBack]TkfmRecoveryAdvertisement");
+            foreach (var item in original) errors.Add(item.DeepClone());
+            if (original.Count == 0) errors.Add("TkfmRecoveryUnhandled");
+            overrides[name] = new JObject { ["on_error"] = errors };
+        }
+        // Recovery may finish a login subflow, but must never stop its parent task.
+        // Only the recognized home page completes a login subflow; no advertisement is required.
+        overrides["GameMainReady"] = new JObject
+        {
+            ["action"] = new JObject { ["type"] = "DoNothing" }, ["next"] = new JArray()
+        };
+        return overrides;
+    }
+
+    private static JArray NodeList(JToken? value) => value is JArray array
+        ? (JArray)array.DeepClone() : value == null || value.Type == JTokenType.Null
+            ? new JArray() : new JArray(value.DeepClone());
+
     private static JObject RetryOverride(IMaaContext context, string entry)
     {
         var overrides = new JObject();
@@ -246,7 +290,7 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                 ["action"] = new JObject { ["type"] = "StartApp", ["param"] = new JObject { ["package"] = package } }
             },
             // StopTask propagates to the parent context and would prevent rerunning the failed module.
-            // Finish only this login subtask after closing the advertisement and recognizing Expedition.
+            // Finish only this login subtask after recognizing Expedition without a known obstruction.
             ["GameMainReady"] = new JObject { ["action"] = new JObject { ["type"] = "DoNothing" }, ["next"] = new JArray() }
         };
     }
@@ -296,15 +340,10 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                     bringForward["GameLoginLaunch"]["next"] = new JArray();
                     if (!RunOnce(context, processor, "GameLoginLaunch", bringForward.ToString(Formatting.None))) return false;
                 }
-                // Main-page buttons may appear before a delayed startup advertisement.
-                // Use the same advertisement gate as a fresh launch; only the post-close
-                // Expedition recognition may finish preparation for this queue.
-                processor.AddLog("[自动启动] 已检测到游戏进程，等待关闭启动广告；提前出现出征或召唤不代表启动完成。",
+                // Let the selected task recognize its current page. Delayed advertisements
+                // and other interruptions are handled by the installed recovery branches.
+                processor.AddLog("[自动启动] 游戏已运行，直接执行当前任务；广告、公告或返回按钮交由异常恢复处理。",
                     changeColor: false);
-                if (!RunAttempt(context, processor, "GameLoginEnsureReady",
-                    new[] { "GameMainReady" }, overrides.ToString(Formatting.None)))
-                    return false;
-                processor.AddLog("[自动启动] 已关闭启动广告并识别到出征，继续当前任务。", changeColor: false);
             }
             if (Cancelled(context, processor)) return false;
             MarkGamePrepared(processor);

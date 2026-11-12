@@ -167,7 +167,7 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
             IsEnabled = processor.ViewModel?.IsRunning != true
         };
         ToolTip.SetTip(behavior,
-            "重启：首次失败最多重启游戏一次并重做当前步骤。暂停：失败后冻结任务，等待人工处理后继续。");
+            "故障时先关闭已识别的公告、签到或广告，也可识图点击左上返回按钮；每个任务合计最多两次。仍失败时：重启游戏一次并重做，或暂停等待人工处理。");
         behavior.SelectionChanged += (_, __) =>
         {
             if (behavior.SelectedIndex < 0) return;
@@ -191,7 +191,8 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
         panel.Children.Add(behaviorRow);
         panel.Children.Add(new TextBlock
         {
-            Text = "仅适用于当前实例。“重启”会消耗一次游戏重启额度；“暂停”冻结在当前节点边界，"
+            Text = "故障时先关闭已识别的弹窗或点击左上返回按钮，每个任务合计最多两次，保留购买记录及资源额度。仍失败时，"
+                + "“重启”会消耗一次游戏重启额度；“暂停”冻结在当前节点边界，"
                 + "点击“继续任务”后本步骤仍记为失败。",
             TextWrapping = TextWrapping.Wrap,
             Opacity = 0.72

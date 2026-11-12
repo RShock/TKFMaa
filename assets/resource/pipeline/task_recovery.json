@@ -12,7 +12,13 @@
                 "RegularActivityBuyStaminaPopup",
                 "DailyTrainingClickCenterSlow",
                 "DailyTrainingClickCenterAllPoints",
-                "DailyRecruitmentCycleCompleted"
+                "DailyRecruitmentCycleCompleted",
+                "TkfmRecoveryAdvertisement",
+                "TkfmRecoveryAnnouncement",
+                "TkfmRecoveryEventSignIn",
+                "TkfmRecoveryBackButton",
+                "GameLoginBackFallback",
+                "GameLoginExistingGiftFallback"
             ]
         }
     },
@@ -39,5 +45,216 @@
         },
         "inverse": true,
         "timeout": 1000
+    },
+    "TkfmRecoveryAdvertisement": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "GameCloseGift"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "timeout": 10000,
+        "next": [
+            "TkfmRecoveryAdvertisementClosed",
+            "TkfmRecoveryAdvertisement"
+        ],
+        "focus": {
+            "Node.Action.Starting": "异常恢复：检测到返回箭头，点击图片中心后继续识别（与公告、签到和普通返回合计最多两次）。"
+        }
+    },
+    "TkfmRecoveryAnnouncement": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "GameCloseAnnouncement"
+                }
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [
+                    360,
+                    1155
+                ]
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                275,
+                1125,
+                170,
+                65
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "timeout": 10000,
+        "next": [
+            "TkfmRecoveryAnnouncementClosed",
+            "TkfmRecoveryAnnouncement"
+        ],
+        "focus": {
+            "Node.Action.Starting": "异常恢复：检测到公告标题，尝试关闭（与广告、签到和普通返回合计最多两次）。"
+        }
+    },
+    "TkfmRecoveryEventSignIn": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "GameCloseEventSignIn"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "timeout": 10000,
+        "focus": {
+            "Node.Action.Starting": "异常恢复：检测到活动签到页的“结束时间”四字，点击文字中心，再继续原步骤识别（与广告、公告和普通返回合计最多两次）。"
+        }
+    },
+    "TkfmRecoveryBackButtonTarget": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "Common/TopLeftBackFull720.png",
+                "roi": [
+                    0,
+                    45,
+                    125,
+                    65
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "TkfmRecoveryBackButton": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "TkfmRecoveryBackButtonTarget"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 2,
+        "focus": {
+            "Node.Action.Starting": "异常恢复：识别到左上角返回按钮，点击按钮中心，再回到原步骤按当前画面继续；不把返回视为任务完成（共享最多两次）。"
+        }
+    },
+    "TkfmRecoveryVisibleGame": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "__CommonMainExpeditionButton",
+                    "DailyShopAlreadyInShop"
+                ]
+            }
+        }
+    },
+    "TkfmRecoveryAdvertisementClosed": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": [
+                        "TkfmRecoveryVisibleGame"
+                    ],
+                    "absent": [
+                        "GameCloseGift",
+                        "GameCloseAnnouncement",
+                        "GameCloseEventSignIn"
+                    ]
+                }
+            }
+        },
+        "focus": {
+            "Node.Action.Succeeded": "异常恢复：广告已关闭且游戏页面已识别，回到中断处继续识别；保留购买记录和资源额度。"
+        }
+    },
+    "TkfmRecoveryAnnouncementClosed": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    100,
+                    150,
+                    520,
+                    120
+                ],
+                "threshold": 0.3,
+                "expected": [
+                    "王城公布栏",
+                    "活动公告",
+                    "最新公告",
+                    "王城公佈欄",
+                    "活動公告",
+                    "最新佈告"
+                ]
+            }
+        },
+        "inverse": true,
+        "next": [
+            "GameLoginEnsureReady"
+        ],
+        "focus": {
+            "Node.Action.Succeeded": "异常恢复：公告已关闭，继续识别当前登录页面；看到出征即完成，不等待广告。"
+        }
+    },
+    "TkfmRecoveryUnhandled": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "TkfmTaskFailure"
+        ],
+        "timeout": 1
     }
 }

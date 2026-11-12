@@ -58,17 +58,17 @@
             "[JumpBack]GameWaitResourceCheck",
             "GameCloseGift",
             "[JumpBack]GameCloseAnnouncement",
+            "[JumpBack]GameCloseEventSignIn",
             "[JumpBack]GameCloseSignIn",
             "[JumpBack]GameTapTitleScreen",
-            "[JumpBack]GameLoginWaitForAdvertisement",
-            "GameLoginAdvertisementMissing",
+            "GameMainReady",
             "[JumpBack]GameLoginWaitTapScreen"
         ],
         "on_error": [
             "GameLoginStopAfterTimeout"
         ],
         "focus": {
-            "Node.Action.Starting": "等待启动广告：必须识别左上角返回按钮并关闭后，才允许确认主界面"
+            "Node.Action.Starting": "按当前画面继续登录；识别到无遮挡的出征即完成，不等待广告出现。"
         }
     },
     "GameLoginWaitTapScreen": {
@@ -176,7 +176,7 @@
         ],
         "timeout": 1000,
         "focus": {
-            "Node.Action.Starting": "启动失败：尚未完成“点击广告返回按钮 → 按钮消失 → 识别出征”，交由故障策略处理。"
+            "Node.Action.Starting": "登录页面识别超时，尚未识别到无遮挡的出征，交由故障策略处理。"
         }
     },
     "GameTapTitleScreen": {
@@ -238,22 +238,37 @@
     },
     "GameCloseEventSignIn": {
         "recognition": {
-            "type": "And",
+            "type": "TemplateMatch",
             "param": {
-                "all_of": [
-                    "__GameSignInTouchScreen"
+                "template": [
+                    "GameLogin/EventSignInEndTime720.png"
+                ],
+                "threshold": 0.9,
+                "roi": [
+                    100,
+                    1020,
+                    520,
+                    160
                 ]
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "max_hit": 2,
         "post_delay": 800,
-        "pre_wait_freezes": 300
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "focus": {
+            "Node.Action.Starting": "检测到活动签到页的“结束时间”四字，点击文字中心，继续识别启动页面。"
+        }
     },
     "GameCloseAnnouncement": {
         "recognition": {
@@ -347,27 +362,36 @@
             "timeout": 1500
         },
         "next": [
-            "GameLoginWaitAdvertisementClosed"
+            "GameLoginDispatch"
         ],
         "focus": {
-            "Node.Recognition.Succeeded": "已识别启动弹窗广告左上角返回按钮，准备点击图片中心。",
-            "Node.Action.Succeeded": "已点击广告返回按钮；按钮消失后识别出征，才算启动完成。"
+            "Node.Recognition.Succeeded": "已识别左上返回箭头，准备点击图片中心。",
+            "Node.Action.Succeeded": "已点击返回箭头，继续按当前画面识别；不等待新的广告出现。"
         }
     },
     "GameMainReady": {
         "recognition": {
-            "type": "And",
+            "type": "Custom",
             "param": {
-                "all_of": [
-                    "__CommonMainExpeditionButton"
-                ]
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": [
+                        "__CommonMainExpeditionButton"
+                    ],
+                    "absent": [
+                        "TkfmRecoveryBackButtonTarget",
+                        "GameCloseGift",
+                        "GameCloseAnnouncement",
+                        "GameCloseEventSignIn"
+                    ]
+                }
             }
         },
         "action": {
             "type": "StopTask"
         },
         "focus": {
-            "Node.Action.Starting": "启动完成：已点击广告左上角返回按钮，确认按钮消失，并识别到出征。"
+            "Node.Action.Starting": "游戏页面准备完成：已识别到出征，且未识别到返回按钮、公告或活动签到遮挡。"
         }
     },
     "__GameSignInTouchScreen": {
@@ -389,7 +413,7 @@
     },
     "GameLoginConfirmMain": {
         "next": [
-            "GameLoginAfterAdvertisement"
+            "GameLoginDispatch"
         ]
     },
     "GameLoginMainInterrupted": {
@@ -403,6 +427,7 @@
                     "GameWaitResourceCheck",
                     "GameCloseGift",
                     "GameCloseAnnouncement",
+                    "GameCloseEventSignIn",
                     "GameCloseSignIn",
                     "GameTapTitleScreen"
                 ]
@@ -420,71 +445,25 @@
         "recognition": {
             "type": "DirectHit"
         },
-        "action": {
-            "type": "DoNothing"
-        },
-        "timeout": 360000,
         "next": [
-            "[JumpBack]GameLoginReconnect",
-            "GameLoginReconnectExhausted",
-            "[JumpBack]GameSkipStartupAnimation",
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]GameWaitResourceCheck",
-            "GameCloseGift",
-            "[JumpBack]GameCloseAnnouncement",
-            "[JumpBack]GameCloseSignIn",
-            "[JumpBack]GameTapTitleScreen",
-            "GameMainReady"
-        ],
-        "on_error": [
-            "GameLoginStopAfterTimeout"
+            "GameLoginDispatch"
         ]
     },
     "GameLoginWaitAdvertisementClosed": {
         "recognition": {
             "type": "DirectHit"
         },
-        "action": {
-            "type": "DoNothing"
-        },
-        "timeout": 30000,
         "next": [
-            "[JumpBack]GameLoginReconnect",
-            "GameLoginReconnectExhausted",
-            "[JumpBack]GameSkipStartupAnimation",
-            "GameCloseGift",
-            "GameLoginAdvertisementGone"
-        ],
-        "on_error": [
-            "GameLoginStopAfterTimeout"
+            "GameLoginDispatch"
         ]
     },
     "GameLoginAdvertisementGone": {
         "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "GameLogin/AdvertisementReturn720.png"
-                ],
-                "threshold": 0.99,
-                "roi": [
-                    0,
-                    45,
-                    125,
-                    65
-                ]
-            }
-        },
-        "inverse": true,
-        "action": {
-            "type": "DoNothing"
+            "type": "DirectHit"
         },
         "next": [
-            "GameLoginAfterAdvertisement"
-        ],
-        "focus": {
-            "Node.Action.Succeeded": "已重新截图确认广告返回按钮消失，开始确认主界面"
-        }
+            "GameLoginDispatch"
+        ]
     },
     "__GameLoginCannotComplete": {
         "recognition": {
@@ -502,6 +481,7 @@
                     "GameWaitResourceCheck",
                     "GameCloseGift",
                     "GameCloseAnnouncement",
+                    "GameCloseEventSignIn",
                     "GameCloseSignIn",
                     "GameSkipStartupAnimation",
                     "CommonWaitLoading"
@@ -544,10 +524,165 @@
     },
     "GameLoginEnsureReady": {
         "next": [
-            "GameLoginDispatch"
+            "GameLoginExistingDispatch"
         ],
         "focus": {
-            "Node.Action.Starting": "自动启动：必须识别并点击启动广告左上角返回按钮，再识别出征；提前出现主页或召唤时只等待广告。"
+            "Node.Action.Starting": "恢复登录：处理当前页面，必要时通过左上返回或城堡回主页，识别到出征即完成。"
+        }
+    },
+    "GameLoginExistingDispatch": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "DoNothing"
+        },
+        "timeout": 360000,
+        "next": [
+            "[JumpBack]GameLoginReconnect",
+            "GameLoginReconnectExhausted",
+            "[JumpBack]GameSkipStartupAnimation",
+            "[JumpBack]CommonWaitLoading",
+            "[JumpBack]GameWaitResourceCheck",
+            "[JumpBack]GameCloseAnnouncement",
+            "[JumpBack]GameCloseEventSignIn",
+            "GameLoginBackFallback",
+            "GameLoginExistingGiftFallback",
+            "[JumpBack]GameCloseSignIn",
+            "[JumpBack]GameTapTitleScreen",
+            "GameLoginCastleFallback",
+            "GameMainReady",
+            "[JumpBack]GameLoginWaitTapScreen"
+        ],
+        "on_error": [
+            "GameLoginStopAfterTimeout"
+        ]
+    },
+    "GameLoginCastleFallback": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "GameLogin/CastleButton720.png"
+                ],
+                "threshold": 0.94,
+                "roi": [
+                    50,
+                    1150,
+                    160,
+                    100
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1200,
+        "max_hit": 2,
+        "next": [
+            "GameLoginExistingReturnDispatch"
+        ],
+        "focus": {
+            "Node.Recognition.Succeeded": "已有游戏进程停在商城等子页面，识别到城堡按钮。",
+            "Node.Action.Succeeded": "已点击城堡按钮回到游戏主页面，继续确认出征。"
+        }
+    },
+    "GameLoginBackFallback": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "TkfmRecoveryBackButtonTarget"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 2,
+        "next": [
+            "GameLoginExistingReturnDispatch"
+        ],
+        "focus": {
+            "Node.Action.Starting": "启动准备：当前页有左上返回按钮，点击图片中心后继续识别，直到回到主页；与异常恢复共享两次额度。"
+        }
+    },
+    "GameLoginExistingReturnDispatch": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "DoNothing"
+        },
+        "timeout": 10000,
+        "next": [
+            "[JumpBack]GameLoginReconnect",
+            "GameLoginReconnectExhausted",
+            "[JumpBack]GameSkipStartupAnimation",
+            "[JumpBack]CommonWaitLoading",
+            "[JumpBack]GameWaitResourceCheck",
+            "[JumpBack]GameCloseAnnouncement",
+            "[JumpBack]GameCloseEventSignIn",
+            "GameLoginBackFallback",
+            "GameLoginExistingGiftFallback",
+            "[JumpBack]GameCloseSignIn",
+            "[JumpBack]GameTapTitleScreen",
+            "GameLoginCastleFallback",
+            "GameMainReady"
+        ],
+        "on_error": [
+            "GameLoginStopAfterTimeout"
+        ]
+    },
+    "GameLoginExistingGiftFallback": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "GameCloseGift"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 2,
+        "next": [
+            "GameLoginExistingReturnDispatch"
+        ],
+        "focus": {
+            "Node.Action.Starting": "启动准备：识别到左上返回箭头，点击图片中心后继续判断当前页面（与异常恢复共享最多两次）。"
         }
     },
     "__GameLoginDispatchOverview": {
@@ -620,33 +755,18 @@
     },
     "GameLoginWaitForAdvertisement": {
         "recognition": {
-            "type": "And",
-            "param": {
-                "all_of": [
-                    "__GameLoginGamePageVisible"
-                ]
-            }
+            "type": "DirectHit"
         },
-        "post_delay": 1000,
-        "max_hit": 60,
-        "focus": {
-            "Node.Recognition.Succeeded": "已看到游戏内按钮，但尚未关闭本轮启动广告，继续等待广告出现。"
-        }
+        "next": [
+            "GameLoginDispatch"
+        ]
     },
     "GameLoginAdvertisementMissing": {
         "recognition": {
-            "type": "And",
-            "param": {
-                "all_of": [
-                    "__GameLoginGamePageVisible"
-                ]
-            }
+            "type": "DirectHit"
         },
         "next": [
-            "GameLoginStopAfterTimeout"
-        ],
-        "focus": {
-            "Node.Recognition.Succeeded": "等待启动广告的次数已用尽，未完成广告返回点击，禁止按启动成功放行。"
-        }
+            "GameLoginDispatch"
+        ]
     }
 }

@@ -13,6 +13,7 @@ import recruitment  # noqa: F401
 import interaction  # noqa: F401
 import daily_shop  # noqa: F401
 import completion  # noqa: F401
+import recovery  # noqa: F401
 import task_rewards  # noqa: F401
 
 
