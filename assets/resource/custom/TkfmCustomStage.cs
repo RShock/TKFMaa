@@ -575,8 +575,16 @@ internal sealed class CustomStageEditor : Window
         body.Children.Add(scroll);
         Grid.SetRow(status, 1); status.Margin = new Thickness(0, 10); body.Children.Add(status);
         var save = Button("保存并使用此关卡", Save);
-        Grid.SetRow(save, 2); body.Children.Add(save);
+        var exit = Button("不保存并退出", () => Close());
+        var footer = new WrapPanel();
+        footer.Children.Add(save); footer.Children.Add(exit);
+        Grid.SetRow(footer, 2); body.Children.Add(footer);
         Content = body;
+        KeyDown += (_, e) =>
+        {
+            if (e.Key != Key.Escape) return;
+            Close(); e.Handled = true;
+        };
         choices.SelectionChanged += (_, __) =>
         {
             if (loading) return;
@@ -805,7 +813,8 @@ internal sealed class CustomStageCapture : Window
     private readonly Button freeze = new Button { Content = "截取", IsEnabled = false };
     private readonly Button confirm = new Button { Content = "使用选区", IsEnabled = false };
     private readonly Button refresh = new Button { Content = "刷新 / 重新截取" };
-    private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1200) };
+    private readonly Button exit = new Button { Content = "不保存并退出" };
+    private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
     private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
     private byte[] frame;
     private Point start;
@@ -866,8 +875,16 @@ internal sealed class CustomStageCapture : Window
             }
             catch (Exception ex) { message.Text = "无法使用选区：" + ex.Message; }
         };
+        // Returning no selection leaves the editor's existing draft unchanged.
+        // The close handler stops refreshes and cancels any pending frame copy.
+        exit.Click += (_, __) => Close();
+        KeyDown += (_, e) =>
+        {
+            if (e.Key != Key.Escape) return;
+            Close(); e.Handled = true;
+        };
         var buttons = new WrapPanel();
-        foreach (var button in new[] { freeze, refresh, confirm }) { button.Margin = new Thickness(0, 0, 8, 4); buttons.Children.Add(button); }
+        foreach (var button in new[] { freeze, refresh, confirm, exit }) { button.Margin = new Thickness(0, 0, 8, 4); buttons.Children.Add(button); }
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto"), Margin = new Thickness(16) };
         grid.Children.Add(hint);
         var viewer = new Viewbox { Child = canvas, Stretch = Stretch.Uniform, Margin = new Thickness(0, 10) };
@@ -921,7 +938,7 @@ internal sealed class CustomStageCapture : Window
             Bitmap bitmap;
             using (var stream = new MemoryStream(normalized)) bitmap = new Bitmap(stream);
             var old = image.Source as IDisposable; image.Source = bitmap; old?.Dispose(); frame = normalized;
-            message.Text = "正在复用助手右侧实时画面（约每1.2秒刷新）。在游戏窗口操作到目标页面后点击“截取”。";
+            message.Text = "正在复用助手右侧实时画面（每0.5秒尝试刷新）。在游戏窗口操作到目标页面后点击“截取”；画面不对可不保存并退出。";
             freeze.IsEnabled = true;
         }
         catch (OperationCanceledException) { }
