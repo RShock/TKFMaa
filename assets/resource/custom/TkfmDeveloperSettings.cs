@@ -87,9 +87,16 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
 
     private static void ForceGithubConfiguration()
     {
-        // This fork is maintained locally. Never let upstream updates replace it.
+        // Restore the switch once after the old fork policy disabled all checks.
+        // Later user changes must persist, including explicitly disabling checks.
+        const string migrationKey = "TkfmForkUpdateCheckV1";
+        if (!ConfigurationManager.Current.GetValue(migrationKey, false))
+        {
+            ConfigurationManager.Current.SetValue(ConfigurationKeys.EnableCheckVersion, true);
+            ConfigurationManager.Current.SetValue(migrationKey, true);
+        }
+        // Checking this fork is allowed; unattended installation remains disabled.
         foreach (string setting in new[] {
-                     ConfigurationKeys.EnableCheckVersion,
                      ConfigurationKeys.EnableAutoUpdateResource,
                      ConfigurationKeys.EnableAutoUpdateMFA })
             if (ConfigurationManager.Current.GetValue(setting, true))
@@ -238,13 +245,19 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
     private static void ApplyGithubOnly(VersionUpdateSettingsUserControl view)
     {
         if (!(view.DataContext is VersionUpdateSettingsUserControlModel model)) return;
-        model.EnableCheckVersion = false;
+        model.EnableCheckVersion = ConfigurationManager.Current.GetValue(ConfigurationKeys.EnableCheckVersion, true);
         model.EnableAutoUpdateResource = false;
         model.EnableAutoUpdateMFA = false;
-        foreach (var toggle in view.GetVisualDescendants().OfType<ToggleSwitch>())
+        // MFAAvalonia 2.16.2 declares checking first, followed by the two
+        // automatic installation switches. Leave the first native binding intact.
+        var toggles = view.GetVisualDescendants().OfType<ToggleSwitch>().ToArray();
+        for (int index = 0; index < toggles.Length; index++)
         {
-            toggle.IsEnabled = false;
-            ToolTip.SetTip(toggle, "本地魔改版本已关闭自动检查和自动更新，请手动管理版本。");
+            var toggle = toggles[index];
+            if (index > 0) toggle.IsEnabled = false;
+            ToolTip.SetTip(toggle, index == 0
+                ? "启动时检查 RShock/TKFMaaR 的版本；可自行关闭。发现新版后由你确认下载和安装。"
+                : "自动安装已关闭；请在发现新版后手动确认更新。");
         }
         if (model.DownloadSourceIndex != 0) model.DownloadSourceIndex = 0;
         if (!string.IsNullOrEmpty(model.CdkPassword)) model.CdkPassword = string.Empty;

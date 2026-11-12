@@ -108,12 +108,17 @@ if ($LASTEXITCODE -ne 0) {
     throw '实例配置迁移未完成，未启动开发版；原配置备份保留在 install/backup/。'
 }
 # Persist before launch: custom extensions load after the frontend's startup
-# settings, so disabling checks only inside an extension would be too late.
+# settings. Restore fork checks before launch and preserve later user choices.
 $globalConfig = if (Test-Path -LiteralPath $globalConfigPath -PathType Leaf) {
     Get-Content -LiteralPath $globalConfigPath -Raw -Encoding utf8 |
         ConvertFrom-Json -AsHashtable -Depth 100
 } else { @{} }
-foreach ($setting in @('EnableCheckVersion', 'EnableAutoUpdateResource', 'EnableAutoUpdateMFA')) {
+if ($globalConfig['TkfmForkUpdateCheckV1'] -ne $true) {
+    $globalConfig['EnableCheckVersion'] = $true
+    $globalConfig['TkfmForkUpdateCheckV1'] = $true
+}
+$globalConfig['DownloadSourceIndex'] = 0
+foreach ($setting in @('EnableAutoUpdateResource', 'EnableAutoUpdateMFA')) {
     $globalConfig[$setting] = $false
 }
 New-Item -ItemType Directory -Path (Split-Path $globalConfigPath -Parent) -Force | Out-Null
@@ -127,7 +132,7 @@ $interfaceJson = ($interface | ConvertTo-Json -Depth 100) + "`n"
 $frontendProcess = Start-Process -FilePath $frontendPath -WorkingDirectory $runtimeRoot -PassThru `
     -WindowStyle Normal -Environment @{ MAAFW_BINARY_PATH = $nativePath; PYTHONUTF8 = '1' }
 Write-Output "已启动开发版，PID：$($frontendProcess.Id)"
-Write-Output '已关闭启动版本检查、资源自动更新及前端自动更新。'
+Write-Output '版本检查使用 RShock/TKFMaaR，首次恢复为开启，后续保留用户选择；自动安装保持关闭。'
 Write-Output '任务识别与实时预览共用一个截图控制器，不再另建预览连接。'
 Write-Output "资源：$(Join-Path $projectRoot 'assets/resource')"
 Write-Output "Agent：$(Join-Path $projectRoot 'agent/main.py')"
