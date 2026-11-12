@@ -50,7 +50,7 @@
             "timeout": 1500
         },
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "max_hit": 6,
         "post_delay": 800
@@ -82,7 +82,7 @@
             "timeout": 1500
         },
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "max_hit": 6,
         "post_delay": 1000
@@ -117,7 +117,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：看到一键收取，点击中心；确认弹窗由统一入口处理（收取最多三次）。"
@@ -182,7 +182,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：看到可交付订单勾选标记，点击对应完整卡片；下一轮重新识别奖励或仍在的订单。"
@@ -244,7 +244,7 @@
             "DailyAlchemyOrdersFinishRouter"
         ],
         "on_error": [
-            "DailyAlchemyOrdersFinishRouter"
+            "DailyAlchemyOrdersRetryFinish"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：三栏均已生产、没有可交付订单或弹窗，返回主页。"
@@ -396,7 +396,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：看到奖励弹窗的确定按钮，点击图片中心；按钮仍在则下一轮继续处理。"
@@ -664,7 +664,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：看到闲置栏，点击闲置文字中心打开配方；不操作正在炼成的队列。"
@@ -700,7 +700,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：看到炼金品项中的蓝宝石配方，点击蓝宝石图片。"
@@ -741,7 +741,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：蓝宝石数量尚未显示999，点击MAX；仍未到999则重新识别后再点。"
@@ -778,7 +778,7 @@
             "DailyAlchemyOrdersScanOrder"
         ],
         "on_error": [
-            "DailyAlchemyOrdersScanOrder"
+            "DailyAlchemyOrdersRetryScan"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：已识别蓝宝石及制作999个，点击炼金按钮；随后按实际画面继续。"
@@ -826,10 +826,26 @@
             "DailyAlchemyOrdersFinishRouter"
         ],
         "on_error": [
-            "DailyAlchemyOrdersFinishRouter"
+            "DailyAlchemyOrdersRetryFinish"
         ],
         "focus": {
             "Node.Action.Starting": "炼金：返回时看到奖励确定，点击后继续识别主页。"
         }
+    },
+    "DailyAlchemyOrdersRetryScan": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ]
+    },
+    "DailyAlchemyOrdersRetryFinish": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "DailyAlchemyOrdersFinishRouter"
+        ]
     }
 }
