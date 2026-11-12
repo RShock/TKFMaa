@@ -39,6 +39,14 @@ $interface.version = "$($interface.version)-dev"
 # Forced restart is explicit: back up persisted settings before interrupting the
 # frontend. Match full paths and Agent script arguments, never process names alone.
 if ($ForceRestart) {
+    $importLockPath = Join-Path $runtimeRoot '.tkfm-first-run-import.lock'
+    if (Test-Path -LiteralPath $importLockPath -PathType Leaf) {
+        try {
+            $importGuard = [IO.File]::Open($importLockPath, [IO.FileMode]::Open, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+            $importGuard.Dispose()
+        }
+        catch { throw '配置正在迁移，未结束助手；请等待导入完成后再重开开发版。' }
+    }
     $forceBackupRoot = Join-Path $backupRoot 'before-force'
     New-Item -ItemType Directory -Path $forceBackupRoot -Force | Out-Null
     foreach ($stateFile in @($runtimeInterfacePath, (Join-Path $runtimeRoot 'appsettings.json'))) {
@@ -54,23 +62,31 @@ if ($ForceRestart) {
 
     $agentScriptPath = (Join-Path $projectRoot 'agent/main.py').Replace('\', '/')
     $agentArgumentPattern = '(?i)(?:^|[\s"])' + [regex]::Escape($agentScriptPath) + '(?=[\s"]|$)'
-    $processSnapshot = @(Get-CimInstance Win32_Process -Filter "Name = 'MFAAvalonia.exe' OR Name = 'python.exe' OR Name = 'pythonw.exe'")
+    $processSnapshot = @(Get-CimInstance Win32_Process -Filter "Name = 'MFAAvalonia.exe' OR Name = 'python.exe' OR Name = 'pythonw.exe' OR Name = 'pwsh.exe' OR Name = 'powershell.exe'")
+    $frontendIds = @($processSnapshot | Where-Object { $_.ExecutablePath -ieq $frontendPath } | ForEach-Object { $_.ProcessId })
+    $wizardPath = (Join-Path $runtimeRoot 'migration/first_run.ps1').Replace('\', '/')
+    $wizardArgumentPattern = '(?i)(?:^|[\s"])' + [regex]::Escape($wizardPath) + '(?=[\s"]|$)'
     $forceTargets = @($processSnapshot | Where-Object { $_.ExecutablePath -ieq $frontendPath }) +
         @($processSnapshot | Where-Object {
             $_.Name -in @('python.exe', 'pythonw.exe') -and
             $_.CommandLine -and $_.CommandLine.Replace('\', '/') -match $agentArgumentPattern
+        }) + @($processSnapshot | Where-Object {
+            $_.Name -in @('pwsh.exe', 'powershell.exe') -and $_.ParentProcessId -in $frontendIds -and
+            $_.CommandLine -and $_.CommandLine.Replace('\', '/') -match $wizardArgumentPattern
         })
     foreach ($snapshot in $forceTargets) {
         $targetProcessId = [int]$snapshot.ProcessId
         $current = Get-CimInstance Win32_Process -Filter "ProcessId = $targetProcessId"
         if ($null -eq $current) { continue }
+        $targetProcess = Get-Process -Id $targetProcessId -ErrorAction SilentlyContinue
+        if ($null -eq $targetProcess -or $targetProcess.HasExited) { continue }
         if ($current.CreationDate -ne $snapshot.CreationDate -or
             $current.ExecutablePath -ine $snapshot.ExecutablePath -or
             $current.CommandLine -cne $snapshot.CommandLine) {
+            # The idle wizard can exit with its parent while CIM is reading it.
+            if ($targetProcess.HasExited) { continue }
             throw "进程身份已变化，未结束 PID $targetProcessId；请重新运行启动脚本。"
         }
-        $targetProcess = Get-Process -Id $targetProcessId -ErrorAction SilentlyContinue
-        if ($null -eq $targetProcess) { continue }
         try {
             Stop-Process -InputObject $targetProcess -Force
         }
@@ -107,6 +123,28 @@ if (Test-Path -LiteralPath $globalConfigPath -PathType Leaf) {
 if ($LASTEXITCODE -ne 0) {
     throw '实例配置迁移未完成，未启动开发版；原配置备份保留在 install/backup/。'
 }
+# Build the startup component needed by the actual application, not a test run.
+$startupProject = Join-Path $projectRoot 'tools/first_run/TkfmFirstRun.csproj'
+$startupAssembly = Join-Path $projectRoot 'build/first-run-hook/TkfmFirstRun.dll'
+$startupSources = @(Get-Item -LiteralPath $startupProject) +
+    @(Get-ChildItem -LiteralPath (Split-Path $startupProject -Parent) -Filter '*.cs')
+$needsStartupBuild = -not (Test-Path -LiteralPath $startupAssembly -PathType Leaf)
+if (-not $needsStartupBuild) {
+    $compiledAt = (Get-Item -LiteralPath $startupAssembly).LastWriteTimeUtc
+    $needsStartupBuild = @($startupSources | Where-Object { $_.LastWriteTimeUtc -gt $compiledAt }).Count -gt 0
+}
+if ($needsStartupBuild) {
+    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+        throw '首次启动迁移模块需要 .NET SDK 8 或更高版本构建；请安装 SDK 后再启动开发版。'
+    }
+    & dotnet build $startupProject --configuration Release --output (Split-Path $startupAssembly -Parent) --nologo --verbosity quiet
+    if ($LASTEXITCODE -ne 0) { throw '首次启动迁移模块构建失败，未启动旧开发版。' }
+}
+foreach ($startupConfig in @('MFAAvalonia.runtimeconfig.json', 'MFAAvalonia.deps.json')) {
+    Copy-Item -LiteralPath (Join-Path $runtimeRoot $startupConfig) -Destination (Join-Path $backupRoot $startupConfig)
+}
+& $pythonPath (Join-Path $projectRoot 'tools/install_first_run.py') --runtime $runtimeRoot --assembly $startupAssembly
+if ($LASTEXITCODE -ne 0) { throw '首次启动迁移模块安装失败，未启动开发版。' }
 # Persist before launch: custom extensions load after the frontend's startup
 # settings. Restore fork checks before launch and preserve later user choices.
 $globalConfig = if (Test-Path -LiteralPath $globalConfigPath -PathType Leaf) {
@@ -130,10 +168,14 @@ $interfaceJson = ($interface | ConvertTo-Json -Depth 100) + "`n"
 # The source Agent must use the same MaaFramework native runtime as the GUI.
 # Pass these settings only to the launched process and its children.
 $frontendProcess = Start-Process -FilePath $frontendPath -WorkingDirectory $runtimeRoot -PassThru `
-    -WindowStyle Normal -Environment @{ MAAFW_BINARY_PATH = $nativePath; PYTHONUTF8 = '1' }
+    -WindowStyle Normal -Environment @{
+        MAAFW_BINARY_PATH = $nativePath; PYTHONUTF8 = '1'
+        TKFM_FIRST_RUN_PYTHON = $pythonPath; TKFM_FIRST_RUN_PWSH = (Join-Path $PSHOME 'pwsh.exe')
+    }
 Write-Output "已启动开发版，PID：$($frontendProcess.Id)"
 Write-Output '版本检查使用 RShock/TKFMaaR，首次恢复为开启，后续保留用户选择；自动安装保持关闭。'
 Write-Output '任务识别与实时预览共用一个截图控制器，不再另建预览连接。'
+Write-Output '首次打开此目录将显示旧版配置迁移向导，可取消；之后不再自动提示。'
 Write-Output "资源：$(Join-Path $projectRoot 'assets/resource')"
 Write-Output "Agent：$(Join-Path $projectRoot 'agent/main.py')"
 Write-Output '未传入自动执行参数；请在界面中手动运行需要验证的任务。'

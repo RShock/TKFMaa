@@ -178,6 +178,16 @@ jobs:
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
 
+      - name: Set up startup hook SDK
+        if: matrix.os == 'win'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build Windows first-run hook
+        if: matrix.os == 'win'
+        run: dotnet build tools/first_run/TkfmFirstRun.csproj --configuration Release --output build/first-run-hook --nologo
+
       - name: Clean up MFAAvalonia archive
         if: matrix.os != 'android'
         shell: bash
@@ -254,7 +264,7 @@ jobs:
             --only-binary=:all: \
             --platform any \
             --python-version "${{ env.PYTHON_VERSION }}" \
-            maaagentbinary strenum
+            maaagentbinary strenum json-with-comments
 
           rm -rf "${{ matrix.python_site_packages }}/maa/bin"
 
@@ -265,6 +275,7 @@ jobs:
           test -f "${{ matrix.python_executable }}"
           test -f "${{ matrix.python_site_packages }}/maa/__init__.py"
           test -d "${{ matrix.python_site_packages }}/numpy"
+          test -f "${{ matrix.python_site_packages }}/jsonc/__init__.py"
           test ! -d "${{ matrix.python_site_packages }}/maa/bin"
           test -d "install/runtimes/${{ (matrix.os == 'win' && 'win') || (matrix.os == 'macos' && 'osx') || 'linux' }}-${{ (matrix.arch == 'x86_64' && 'x64') || 'arm64' }}/native"
           grep -Fq '"child_exec": "./python/' install/interface.json

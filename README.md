@@ -9,19 +9,21 @@
 
 基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 的「天下布魔」日常自动化助手
 
-RShock 维护版本，当前版本 **1.1**，在原 TKFMaa 项目基础上独立维护。
+RShock 维护版本，当前版本 **1.2**，在原 TKFMaa 项目基础上独立维护。
 
 </div>
 
 ## 安装与使用
 
-1. 从 [RShock/TKFMaaR Releases](https://github.com/RShock/TKFMaaR/releases/latest) 下载对应系统的完整压缩包并解压，普通 Windows 电脑选择 `TKFMaaR-win-x86_64-v1.1.zip`
+1. 从 [RShock/TKFMaaR Releases](https://github.com/RShock/TKFMaaR/releases/latest) 下载对应系统的完整压缩包并解压，普通 Windows 电脑选择 `TKFMaaR-win-x86_64-v1.2.zip`
 2. 运行 `DependencySetup_依赖库安装_win.bat`
 3. 运行 `MFAAvalonia.exe`
 
 发布包包含 Python 3.12、MaaFramework 5.14.3 与 MFAAvalonia 2.16.2。启动时默认自动检查 `RShock/TKFMaaR` 的新版本，可在设置中关闭；发现更新后由用户确认下载和安装，不使用 Fork 前原项目的发布源。
 
-1.0 的部分版本曾错误关闭并锁定自动检查，无法通过远程发布自动解除；这些用户须手动下载并安装一次 1.1。安装后会恢复检查开关，之后保留用户自己的开关选择。
+1.0 的部分版本曾错误关闭并锁定自动检查，无法通过远程发布自动解除；这些用户须手动下载并安装一次 1.1 或更新版本。安装后会恢复检查开关，之后保留用户自己的开关选择。
+
+1.2加入Windows首次打开的[旧版配置迁移向导](docs/zh_cn/tasks/config_migration.md)：打开旧助手后自动检测，唯一来源无需选择，点击导入即可继承 `config`、`appsettings.json` 和自定义关卡截图；多个来源时才需选择。可取消且只自动提示一次，导入前备份新版资料，旧目录保留。手动升级也须保留这三部分，不能只复制 `config`。
 
 ## 注意事项
 

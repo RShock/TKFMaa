@@ -13,11 +13,12 @@ except ModuleNotFoundError as e:
     ) from e
 
 from configure import configure_ocr_model
+from install_first_run import install_first_run
 
 
 working_dir = Path(__file__).parent.parent.resolve()
 install_path = working_dir / Path("install")
-version = len(sys.argv) > 1 and sys.argv[1] or "v1.1"
+version = len(sys.argv) > 1 and sys.argv[1] or "v1.2"
 
 # the first parameter is self name
 if sys.argv.__len__() < 4:
@@ -155,6 +156,8 @@ def install_chores():
         working_dir / "LICENSE",
         install_path,
     )
+    if os_name == "win":
+        install_first_run(install_path, working_dir / "build" / "first-run-hook" / "TkfmFirstRun.dll")
 
 
 def install_agent():

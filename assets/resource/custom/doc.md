@@ -5,6 +5,13 @@
 - 使用 MFAAvalonia 2.16.2 自带的 C# 自定义动作加载器，连接初始化时编译本目录顶层 `.cs`，无需修改 EXE 或另装匹配库。按钮在资源及连接初始化后出现。
 - `TkfmDetailedLog` 与 `TkfmDeveloperSettings` 仅作为扩展入口注册，不加入任务流程，不执行设备动作。变更后重新启动开发版；重复加载须释放旧定时器及事件订阅。
 
+## 首次打开的旧版迁移
+
+- Windows 发布包另装 `tools/first_run/` 的 .NET StartupHook，在前端读取配置前显示一次向导，不依赖设备连接或资源扩展加载。保留原 libloader 和前端二进制，构建生成独立启动程序集；其他平台使用手动迁移。
+- 用户同时打开旧助手后，按进程目录和 TKFMaa/TKFMaaR 元信息每1.5秒自动检测来源；唯一旧助手无需选择，多个时才显示选择列表。点击导入后仅结束该来源且路径、启动时间均匹配的旧进程。先暂存并核对，再结束旧助手，重新读取落盘资料、备份新版资料后导入。取消和关闭均不结束旧程序。
+- 完整迁移 `config/`、根 `appsettings.json`、旧资源的 `image/UserStages/`，包含关卡入口图、关卡图及页面标记；不把旧界面定义或运行代码复制回来。缺失的图片引用或无法读取的配置必须明确报错。
+- `.tkfm-first-run-migration.json` 位于安装根目录，独立于被导入的配置，展示／取消／完成后不再自动弹出；备份在 `backup/config-import-*`。已有数据被替换前备份，失败回滚，旧目录保留。流程和人工迁移方法见[配置迁移](../../../docs/zh_cn/tasks/config_migration.md)。
+
 ## 更新源与更新渠道
 
 - 启动自动检查资源版本，资源仓库和反馈元信息只指向 `RShock/TKFMaaR`；不向Fork前原项目查询。`EnableCheckVersion` 默认true，检查开关由用户控制；`EnableAutoUpdateResource`、`EnableAutoUpdateMFA` 保持false并禁用自动安装开关，发现新版本后由用户确认更新。

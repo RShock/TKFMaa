@@ -39,6 +39,7 @@ Windows 本地开发环境使用 `.venv312/`，VS Code 默认解释器和终端�
 - `python tools/build_stamina_activities.py --check`：只检查体力活动配置与 `assets/interface.json` 是否同步，不写文件。
 - `python tools/add_interaction_stability.py --check`：检查带识别结果的交互动作是否配置点击前稳定等待。
 - `pwsh -File tools/run_dev.ps1`：使用已准备的 `install/` 前端及 native runtime 和 `.venv312/` 启动开发版，直接加载源码资源和 Agent；要求 PowerShell 7.4 及以上，不重新打包或修改 EXE。
+- Windows 首次启动迁移入口为 `tools/first_run/`；开发启动与 Windows 发布构建需 .NET SDK 8 或更高版本生成独立 StartupHook，保留原 EXE/DLL，只更新启动依赖配置。启动向导先于用户配置加载，不得改成连接设备后才弹窗。安装目录的一次性标记不随开发重启删除，配置迁移必须同时包含 `config/`、`appsettings.json` 和自定义截图。开发强制重启可精确结束本前端启动的空闲迁移向导，导入进行中则停止重启。
 - `pwsh -File tools/run_dev.ps1 -ForceRestart`：用户明确授权强制重启时，先备份配置，再按完整路径结束本工作区助手与本项目 Agent 后重新打开界面；会中断当前队列，不自动重跑任务。
 
 每次修改代码或运行资源后，必须执行 `pwsh -File tools/run_dev.ps1`，让用户在最新开发版中检查改动。脚本先正常关闭同一目录的旧前端、备份运行界面配置；需要迁移时先备份实例 JSON 并通过 `tools/migrate_runtime_options.py` 保留旧选项，再生成直接指向 `assets/resource/` 和 `agent/main.py` 的开发配置并启动现有 EXE；不自动执行任务。默认不强制结束运行或暂停中的任务；用户明确授权强制重启时可带 `-ForceRestart`，先备份已保存的全局、实例、运行界面及定时设置，再核对进程路径、启动时间和 Agent 脚本参数，仅结束本工作区对应进程，不结束模拟器或其他助手。依赖缺失、进程结束失败或配置迁移失败时明确报告原因。用户要求自行实测时，只启动界面，不代为运行测试或购买。
