@@ -1,0 +1,1089 @@
+{
+    "DailyCharacterUpgradeClickCenter": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter"
+            }
+        }
+    },
+    "DailyCharacterUpgradeRequired": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "needed"
+                }
+            }
+        },
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeDispatch": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "DailyCharacterUpgradeSettled",
+            "DailyCharacterUpgradePendingExpired",
+            "DailyCharacterUpgradePendingWait",
+            "[JumpBack]CommonWaitLoading",
+            "DailyCharacterUpgradeHandoff",
+            "DailyCharacterUpgradeReturnHome",
+            "DailyCharacterUpgradeCloseFilter",
+            "DailyCharacterUpgradeReturnBack",
+            "DailyCharacterUpgradeNoStock",
+            "DailyCharacterUpgradeClearSelection",
+            "DailyCharacterUpgradeSubmit",
+            "DailyCharacterUpgradeSelectPotion",
+            "DailyCharacterUpgradeLeaveUnselectedPanel",
+            "DailyCharacterUpgradeResetFilter",
+            "DailyCharacterUpgradeConfirmFilter",
+            "DailyCharacterUpgradeCycleFilter",
+            "DailyCharacterUpgradeScrollFilter",
+            "DailyCharacterUpgradeOpenUpgrade",
+            "DailyCharacterUpgradeSelectCard",
+            "DailyCharacterUpgradeOpenFilter",
+            "DailyCharacterUpgradeOpenCharacters",
+            "DailyCharacterUpgradeRestartHome"
+        ],
+        "timeout": 10000,
+        "max_hit": 80,
+        "on_error": [
+            "DailyCharacterUpgradeSkip"
+        ]
+    },
+    "DailyCharacterUpgradeFinish": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "next": [
+            "[JumpBack]CommonWaitLoading",
+            "DailyCharacterUpgradeHandoff",
+            "DailyCharacterUpgradeReturnHome",
+            "DailyCharacterUpgradeCloseFilter",
+            "DailyCharacterUpgradeReturnBack"
+        ],
+        "timeout": 10000,
+        "max_hit": 16,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "DailyCharacterUpgradeSettled": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "settled"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "settled"
+                }
+            }
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 2,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradePendingExpired": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "pending_expired"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "pending_expired"
+                }
+            }
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 1,
+        "on_error": [
+            "DailyCharacterUpgradeSkip"
+        ]
+    },
+    "DailyCharacterUpgradePendingWait": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "pending_wait"
+                }
+            }
+        },
+        "post_delay": 500,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 50,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeHandoff": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "handoff"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "handoff"
+                }
+            }
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyTaskRewardsStartAttempt"
+        ],
+        "max_hit": 1,
+        "on_error": [
+            "DailyCharacterUpgradeSkip"
+        ]
+    },
+    "DailyCharacterUpgradeReturnHome": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "return_home"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "return_home"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 5,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "DailyCharacterUpgradeCloseFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "close_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "close_filter"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 3,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "DailyCharacterUpgradeReturnBack": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "return_back"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "return_back"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 6,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "DailyCharacterUpgradeNoStock": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "no_stock"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "no_stock"
+                }
+            }
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 1,
+        "on_error": [
+            "DailyCharacterUpgradeSkip"
+        ]
+    },
+    "DailyCharacterUpgradeClearSelection": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "clear_selection"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "clear_selection"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 6,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeSubmit": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "submit"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "submit"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 2,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeSelectPotion": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "select_potion"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "select_potion"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 5,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeLeaveUnselectedPanel": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "leave_unselected_panel"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "leave_unselected_panel"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 3,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeResetFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "reset_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "reset_filter"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 3,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeConfirmFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "confirm_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "confirm_filter"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 4,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeCycleFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "cycle_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "cycle_filter"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 6,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeScrollFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "scroll_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [
+                    600,
+                    980
+                ],
+                "end": [
+                    600,
+                    300
+                ],
+                "duration": 600
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": [
+                95,
+                140,
+                520,
+                900
+            ],
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 6,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeOpenUpgrade": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "open_upgrade"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "open_upgrade"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 4,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeSelectCard": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "select_card"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "select_card"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 4,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeOpenFilter": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "open_filter"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "open_filter"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 4,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeOpenCharacters": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "open_characters"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "open_characters"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 4,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeRestartHome": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "DailyCharacterUpgradeState",
+                "custom_recognition_param": {
+                    "mode": "restart_home"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "restart_home"
+                }
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1000,
+        "next": [
+            "DailyCharacterUpgradeDispatch"
+        ],
+        "max_hit": 3,
+        "on_error": [
+            "DailyCharacterUpgradeDispatch"
+        ]
+    },
+    "DailyCharacterUpgradeSkip": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "DailyCharacterUpgradeAction",
+                "custom_action_param": {
+                    "mode": "skip"
+                }
+            }
+        },
+        "next": [
+            "DailyCharacterUpgradeFinish"
+        ],
+        "max_hit": 1,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "__DailyCharacterUpgradeCharacterTab": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/CharacterTab720.png"
+                ],
+                "roi": [
+                    180,
+                    1165,
+                    130,
+                    85
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeFavoriteStar": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/FavoriteStar720.png"
+                ],
+                "roi": [
+                    475,
+                    525,
+                    70,
+                    75
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeOverviewInfo": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/OverviewInfo720.png"
+                ],
+                "roi": [
+                    580,
+                    925,
+                    140,
+                    60
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeOverviewUpgrade": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/OverviewUpgrade720.png"
+                ],
+                "roi": [
+                    580,
+                    980,
+                    140,
+                    60
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeFilterTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/FilterTitle720.png"
+                ],
+                "roi": [
+                    280,
+                    55,
+                    160,
+                    65
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeFilterReset": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/FilterReset720.png"
+                ],
+                "roi": [
+                    115,
+                    1055,
+                    230,
+                    75
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeLevelLabel": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/LevelLabel720.png"
+                ],
+                "roi": [
+                    90,
+                    130,
+                    140,
+                    910
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeLevelAll": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/LevelAll720.png"
+                ],
+                "roi": [
+                    450,
+                    130,
+                    155,
+                    910
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeLevelMax": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/LevelMax720.png"
+                ],
+                "roi": [
+                    450,
+                    130,
+                    155,
+                    910
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeLevelNotMax": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/LevelNotMax720.png"
+                ],
+                "roi": [
+                    450,
+                    130,
+                    155,
+                    910
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeFilterConfirm": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/FilterConfirm720.png"
+                ],
+                "roi": [
+                    375,
+                    1055,
+                    235,
+                    75
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeFilterClose": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/FilterClose720.png"
+                ],
+                "roi": [
+                    315,
+                    1150,
+                    95,
+                    100
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeStrengthenTab": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/StrengthenTab720.png"
+                ],
+                "roi": [
+                    340,
+                    720,
+                    140,
+                    75
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeLowestPotion": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/LowestPotion720.png"
+                ],
+                "roi": [
+                    95,
+                    790,
+                    100,
+                    90
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeSelectedOne": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/SelectedOne720.png"
+                ],
+                "roi": [
+                    165,
+                    785,
+                    475,
+                    45
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeSubmit": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/Submit720.png"
+                ],
+                "roi": [
+                    250,
+                    1025,
+                    220,
+                    75
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeClear": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/Clear720.png"
+                ],
+                "roi": [
+                    90,
+                    1090,
+                    150,
+                    70
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeCastle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyCharacterUpgrade/Castle720.png"
+                ],
+                "roi": [
+                    60,
+                    1165,
+                    135,
+                    85
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyCharacterUpgradeCardLevels": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    190,
+                    875,
+                    470,
+                    55
+                ],
+                "expected": [
+                    "[Ll][Vv]\\s*[0-9]{1,3}"
+                ],
+                "threshold": 0.3,
+                "order_by": "Horizontal"
+            }
+        }
+    }
+}

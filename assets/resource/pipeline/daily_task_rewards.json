@@ -6,6 +6,20 @@
         "action": {
             "type": "Custom",
             "param": {
+                "custom_action": "DailyCharacterUpgradeInitialize"
+            }
+        },
+        "next": [
+            "DailyTaskRewardsRun"
+        ]
+    },
+    "DailyTaskRewardsRun": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
                 "custom_action": "TkfmRunWithRecovery",
                 "custom_action_param": {
                     "entry": "DailyTaskRewardsStartAttempt",
@@ -16,6 +30,7 @@
     },
     "DailyTaskRewardsStartAttempt": {
         "next": [
+            "DailyCharacterUpgradeRequired",
             "[JumpBack]CommonWaitLoading",
             "[JumpBack]CommonCloseMainGift",
             "DailyTaskRewardsOpenFromMain",

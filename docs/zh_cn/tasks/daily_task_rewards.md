@@ -1,8 +1,8 @@
 # 奖励领取（DailyTaskRewards）
 
-入口节点：`DailyTaskRewardsStart`；实现文件：`assets/resource/pipeline/daily_task_rewards.json`、`agent/completion.py`、`agent/task_rewards.py`。
+入口节点：`DailyTaskRewardsStart`；实现文件：`assets/resource/pipeline/daily_task_rewards.json`、`assets/resource/pipeline/daily_character_upgrade.json`、`agent/character_upgrade.py`、`agent/completion.py`、`agent/task_rewards.py`。
 
-入口经 [统一异常恢复](task_recovery.md) 执行 `DailyTaskRewardsStartAttempt`；首次异常按“遇到故障时行为”重启或暂停，最终失败按继续策略停止或跳过下一步骤。
+入口先初始化本次强化账目，再由 `DailyTaskRewardsRun` 经 [统一异常恢复](task_recovery.md) 执行 `DailyTaskRewardsStartAttempt`；首次异常按“遇到故障时行为”重启或暂停，最终失败按继续策略停止或跳过下一步骤。
 
 ## 前置状态
 
@@ -10,6 +10,8 @@
 - 每日、每周、每月、个人、活动和协会页签可能没有可领取奖励。
 
 ## 主流程
+
+领奖前先完成[角色强化两次](daily_character_upgrade.md)，返回主页后进入下列既有领取流程；六页领取逻辑与仓库上限处理保持原样。只在最外层调用初始化强化额度，局部恢复或游戏重启重做不重新发放。
 
 1. 从主界面打开任务页面并选择每日页签。
 2. 同时确认任务页标题、可领取文本和一键领取按钮；命中后点击并关闭奖励或仓库堆叠上限弹窗。
