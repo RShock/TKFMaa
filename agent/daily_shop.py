@@ -57,14 +57,25 @@ def _selected_targets(context, node_names):
         recognition = node.get("recognition", {})
         if not isinstance(config, dict) or not isinstance(recognition, dict):
             continue
+        if config.get("available") is False:
+            continue
         name = config.get("target_name")
         if not isinstance(name, str) or not name or recognition.get("type") != "TemplateMatch":
+            continue
+        policy = context.get_node_data(config.get("policy_node", "")) or {}
+        # Missing or malformed policy must not silently enable full-price purchases.
+        policy_attach = policy.get("attach", {}) if isinstance(policy, dict) else {}
+        discount_only = not isinstance(policy_attach, dict) or policy_attach.get("discount_only") is not False
+        discount_node = config.get("discount_node")
+        if discount_only and not discount_node:
             continue
         targets.append(
             {
                 "node": node_name,
                 "raw": name,
-                "discount_node": config.get("discount_node"),
+                "discount_node": discount_node if discount_only else None,
+                "discount_only": discount_only,
+                "group": config.get("policy_node"),
             }
         )
     return targets
@@ -221,6 +232,8 @@ def _read_visible_items(context, image, targets, shop_id):
             matched = result is not None and result.hit
             check = {
                 "target": target["raw"],
+                "group": target["group"],
+                "discount_only": target["discount_only"],
                 "mode": "TemplateMatch",
                 "score": _recognition_score(result),
                 "template_hit": matched,

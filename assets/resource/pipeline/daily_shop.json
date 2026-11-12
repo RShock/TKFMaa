@@ -246,6 +246,7 @@
                     "shop_id": "exchange",
                     "target_nodes": [
                         "__DailyShopExchangeEmergencyRecruitmentTicket",
+                        "__DailyShopExchangeEmergencyEmploymentPermit",
                         "__DailyShopExchangeBasicStaminaPotion",
                         "__DailyShopExchangeBasicMaterialDiscount",
                         "__DailyShopExchangeIntermediateMaterialDiscount"
@@ -886,7 +887,8 @@
                         "__DailyShopGuildShockBatonDiscount",
                         "__DailyShopGuildSlimeDiscount",
                         "__DailyShopGuildDarkStoneDiscount",
-                        "__DailyShopGuildFireStoneDiscount"
+                        "__DailyShopGuildFireStoneDiscount",
+                        "__DailyShopGuildLampreyDiscount"
                     ]
                 }
             }
@@ -1000,7 +1002,32 @@
             }
         },
         "attach": {
-            "target_name": "招募命令"
+            "target_name": "招募命令",
+            "policy_node": "DailyShopExchangeSuppliesPolicy",
+            "discount_node": "__DailyShopExchangeDiscount"
+        }
+    },
+    "__DailyShopExchangeEmergencyEmploymentPermit": {
+        "enabled": false,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    70,
+                    280,
+                    545,
+                    740
+                ],
+                "template": [
+                    "DailyShop/EmergencyEmploymentPermitIcon720.png"
+                ],
+                "threshold": 0.96
+            }
+        },
+        "attach": {
+            "target_name": "紧急录用证",
+            "policy_node": "DailyShopExchangeSuppliesPolicy",
+            "discount_node": "__DailyShopExchangeDiscount"
         }
     },
     "__DailyShopExchangeBasicStaminaPotion": {
@@ -1015,13 +1042,15 @@
                     740
                 ],
                 "template": [
-                    "DailyShop/BasicStaminaPotionTitle720.png"
+                    "DailyShop/BasicStaminaPotionIcon720.png"
                 ],
                 "threshold": 0.96
             }
         },
         "attach": {
-            "target_name": "初级体力药水"
+            "target_name": "初级体力药水",
+            "policy_node": "DailyShopExchangeSuppliesPolicy",
+            "discount_node": "__DailyShopExchangeDiscount"
         }
     },
     "__DailyShopExchangeBasicMaterialDiscount": {
@@ -1037,14 +1066,18 @@
                 ],
                 "template": [
                     "DailyShop/MaterialPrice120720.png",
-                    "DailyShop/MaterialPrice120Alternate720.png"
+                    "DailyShop/MaterialPrice120Alternate720.png",
+                    "DailyShop/PoisonPowderIcon720.png",
+                    "DailyShop/IronIngotIcon720.png",
+                    "DailyShop/SlimeFluidIcon720.png"
                 ],
                 "threshold": 0.96
             }
         },
         "attach": {
-            "target_name": "初级材料（打折）",
-            "discount_node": "__DailyShopExchangeDiscount"
+            "target_name": "初级材料",
+            "discount_node": "__DailyShopExchangeDiscount",
+            "policy_node": "DailyShopExchangeMaterialsPolicy"
         }
     },
     "__DailyShopExchangeIntermediateMaterialDiscount": {
@@ -1059,14 +1092,17 @@
                     740
                 ],
                 "template": [
-                    "DailyShop/MaterialPrice240720.png"
+                    "DailyShop/MaterialPrice240720.png",
+                    "DailyShop/MoonlightWaterIcon720.png",
+                    "DailyShop/AdvancedMixtureIcon720.png"
                 ],
                 "threshold": 0.96
             }
         },
         "attach": {
-            "target_name": "中级材料（打折）",
-            "discount_node": "__DailyShopExchangeDiscount"
+            "target_name": "中级材料",
+            "discount_node": "__DailyShopExchangeDiscount",
+            "policy_node": "DailyShopExchangeMaterialsPolicy"
         }
     },
     "__DailyShopExchangeDiscount": {
@@ -1075,6 +1111,7 @@
             "param": {
                 "template": [
                     "DailyShop/Discount20_720.png",
+                    "DailyShop/EmergencyEmploymentPermitDiscount20_720.png",
                     "DailyShop/Discount25_720.png",
                     "DailyShop/Discount40_720.png",
                     "DailyShop/Discount50_720.png",
@@ -1109,7 +1146,9 @@
             }
         },
         "attach": {
-            "target_name": "召唤契约"
+            "target_name": "召唤契约",
+            "policy_node": "DailyShopGuildOtherPolicy",
+            "discount_node": "__DailyShopGuildDiscount"
         }
     },
     "__DailyShopGuildAkaseRecord": {
@@ -1131,7 +1170,9 @@
             }
         },
         "attach": {
-            "target_name": "阿克色记录"
+            "target_name": "阿克色记录",
+            "policy_node": "DailyShopGuildOtherPolicy",
+            "discount_node": "__DailyShopGuildDiscount"
         }
     },
     "__DailyShopGuildSilverDiscount": {
@@ -1152,8 +1193,9 @@
             }
         },
         "attach": {
-            "target_name": "银币（打折）",
-            "discount_node": "__DailyShopGuildDiscount20"
+            "target_name": "银币",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildOtherPolicy"
         }
     },
     "__DailyShopGuildVineDiscount": {
@@ -1174,8 +1216,9 @@
             }
         },
         "attach": {
-            "target_name": "藤蔓（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "藤蔓",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildToolsPolicy"
         }
     },
     "__DailyShopGuildSuccubusWormDiscount": {
@@ -1196,8 +1239,9 @@
             }
         },
         "attach": {
-            "target_name": "淫魔虫（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "淫魔虫",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildToolsPolicy"
         }
     },
     "__DailyShopGuildGaleStoneDiscount": {
@@ -1218,8 +1262,9 @@
             }
         },
         "attach": {
-            "target_name": "烈风之石（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "烈风之石",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildStonesPolicy"
         }
     },
     "__DailyShopGuildDiscount20": {
@@ -1344,8 +1389,9 @@
             }
         },
         "attach": {
-            "target_name": "光明之石（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "光明之石",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildStonesPolicy"
         }
     },
     "__DailyShopGuildShockBatonDiscount": {
@@ -1360,8 +1406,9 @@
             }
         },
         "attach": {
-            "target_name": "电击棒（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "电击棒",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildToolsPolicy"
         }
     },
     "__DailyShopGuildDarkStoneDiscount": {
@@ -1376,8 +1423,9 @@
             }
         },
         "attach": {
-            "target_name": "黑暗之石（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "黑暗之石",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildStonesPolicy"
         }
     },
     "__DailyShopGuildFireStoneDiscount": {
@@ -1392,8 +1440,9 @@
             }
         },
         "attach": {
-            "target_name": "火焰之石（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "火焰之石",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildStonesPolicy"
         }
     },
     "__DailyShopGuildSlimeDiscount": {
@@ -1408,8 +1457,26 @@
             }
         },
         "attach": {
-            "target_name": "史莱姆（打折）",
-            "discount_node": "__DailyShopGuildDiscount50"
+            "target_name": "史莱姆",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildToolsPolicy"
+        }
+    },
+    "__DailyShopGuildLampreyDiscount": {
+        "enabled": false,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyShop/LampreyIcon720.png"
+                ],
+                "threshold": 0.96
+            }
+        },
+        "attach": {
+            "target_name": "八目鳗",
+            "discount_node": "__DailyShopGuildDiscount",
+            "policy_node": "DailyShopGuildToolsPolicy"
         }
     },
     "DailyShopRecordExchangePurchaseAttempt": {
@@ -1449,5 +1516,62 @@
             "DailyShopPurchaseGuildItem"
         ],
         "timeout": 8000
+    },
+    "DailyShopExchangeSuppliesPolicy": {
+        "attach": {
+            "discount_only": true
+        }
+    },
+    "DailyShopExchangeMaterialsPolicy": {
+        "attach": {
+            "discount_only": true
+        }
+    },
+    "__DailyShopGuildFloodStone": {
+        "enabled": false,
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "attach": {
+            "target_name": "洪水之石",
+            "available": false,
+            "policy_node": "DailyShopGuildStonesPolicy"
+        }
+    },
+    "DailyShopGuildStonesPolicy": {
+        "attach": {
+            "discount_only": true
+        }
+    },
+    "DailyShopGuildToolsPolicy": {
+        "attach": {
+            "discount_only": true
+        }
+    },
+    "DailyShopGuildOtherPolicy": {
+        "attach": {
+            "discount_only": true
+        }
+    },
+    "__DailyShopGuildDiscount": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "DailyShop/Discount20_720.png",
+                    "DailyShop/Discount25_720.png",
+                    "DailyShop/Discount40_720.png",
+                    "DailyShop/Discount50_720.png",
+                    "DailyShop/Discount50Alternate720.png"
+                ],
+                "threshold": 0.96,
+                "roi": [
+                    70,
+                    280,
+                    545,
+                    740
+                ]
+            }
+        }
     }
 }

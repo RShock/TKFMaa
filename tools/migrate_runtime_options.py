@@ -7,6 +7,69 @@ import shutil
 from pathlib import Path
 
 
+SHOP_GROUPS = (
+    ("指定购买物品", "指定购买物品", ("招募命令", "紧急录用证（打折）", "初级体力药水")),
+    ("交易所材料", "指定购买物品", ("初级材料（打折）", "中级材料（打折）")),
+    (
+        "协会属性石",
+        "指定协会商店购买物品",
+        ("烈风之石（打折）", "光明之石（打折）", "黑暗之石（打折）", "火焰之石（打折）", "洪水之石"),
+    ),
+    (
+        "协会调教道具",
+        "指定协会商店购买物品",
+        ("藤蔓（打折）", "淫魔虫（打折）", "电击棒（打折）", "史莱姆（打折）", "八目鳗（打折）"),
+    ),
+    ("指定协会商店购买物品", "指定协会商店购买物品", ("召唤契约", "阿克色记录", "银币（打折）")),
+)
+SHOP_DEFAULTS = {
+    "指定购买物品": ["招募命令", "初级体力药水"],
+    "指定协会商店购买物品": ["召唤契约", "阿克色记录"],
+}
+
+
+def migrate_shop_groups(config):
+    if config.get("TkfmShopGroupsV1") is True:
+        return
+    interface_path = Path(__file__).resolve().parent.parent / "assets/interface.json"
+    interface = json.loads(interface_path.read_text(encoding="utf-8"))
+    target_nodes = {
+        node
+        for group, _, _ in SHOP_GROUPS
+        for case in interface["option"][group]["cases"]
+        for node in case.get("pipeline_override", {})
+    }
+    group_keys = {key for group, _, _ in SHOP_GROUPS for key in (group, group + "仅购买打折商品")}
+    for task in config.get("TaskItems", []):
+        if task.get("entry") != "DailyShopStart":
+            continue
+        previous = {option.get("name"): option for option in task.get("option", [])}
+        options = [option for option in task.get("option", []) if option.get("name") not in group_keys]
+        for group, source, names in SHOP_GROUPS:
+            saved = previous.get(group, previous.get(source, {}))
+            selected = saved.get("selected_cases")
+            if not isinstance(selected, list):
+                selected = SHOP_DEFAULTS.get(source, [])
+            options.append({
+                "name": group,
+                "index": 0,
+                "data": {},
+                "selected_cases": [name for name in names if name in selected],
+            })
+            switch = group + "仅购买打折商品"
+            options.append(copy.deepcopy(previous.get(switch, {"name": switch, "index": 0})))
+        task["option"] = options
+        # Cached task overrides must not resurrect unchecked products after regrouping.
+        overrides = task.get("pipeline_override", {})
+        for node in target_nodes:
+            value = overrides.get(node)
+            if isinstance(value, dict):
+                value.pop("enabled", None)
+                if not value:
+                    overrides.pop(node, None)
+    config["TkfmShopGroupsV1"] = True
+
+
 def find_count(options):
     for option in options:
         if option.get("name") == "全境征才循环次数":
@@ -20,6 +83,7 @@ def find_count(options):
 def migrate(config):
     # This also applies to instances whose task choices were already migrated.
     config["UseSeparateScreenshotTasker"] = False
+    migrate_shop_groups(config)
     if config.get("TkfmGameOptionsV2") is True:
         return
     tasks = config.get("TaskItems", [])

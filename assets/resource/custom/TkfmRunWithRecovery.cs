@@ -258,6 +258,15 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
     private static JObject RetryOverride(IMaaContext context, string entry)
     {
         var overrides = new JObject();
+        if (entry == "DailyShopStartAttempt")
+        {
+            // A game restart may rebuild navigation, but cannot issue a new shopping
+            // session or replenish its scroll/purchase budgets.
+            overrides["DailyShopResetExchangeSession"] = new JObject
+            {
+                ["action"] = new JObject { ["type"] = "DoNothing" }
+            };
+        }
         if (entry == "AutoBattleStartAttempt")
         {
             // This legacy entry requires a manually selected activity. Returning to the home page
@@ -407,6 +416,10 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
 internal sealed class TkfmGameOptionsMigration : IDisposable
 {
     private const string MigrationKey = "TkfmGameOptionsV2";
+    private const string ShopMigrationKey = "TkfmShopGroupsV1";
+    private static readonly string[] ShopGroups = {
+        "指定购买物品", "交易所材料", "协会属性石", "协会调教道具", "指定协会商店购买物品"
+    };
     private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
     private readonly Dictionary<MaaProcessor, JArray> snapshots = new Dictionary<MaaProcessor, JArray>();
 
@@ -424,11 +437,17 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
         {
             if (processor.IsClosed || processor.IsConnecting || processor.IsTaskRunActive
                 || processor.ViewModel == null || processor.ViewModel.IsRunning || processor.TaskQueue.Count > 0) continue;
-            if (processor.InstanceConfiguration.GetValue(MigrationKey, false)) continue;
             try
             {
                 var tasks = snapshots.TryGetValue(processor, out var saved) ? saved
                     : processor.InstanceConfiguration.GetValue("TaskItems", new JArray());
+                if (!processor.InstanceConfiguration.GetValue(ShopMigrationKey, false))
+                    MigrateShopOptions(processor, tasks);
+                if (processor.InstanceConfiguration.GetValue(MigrationKey, false))
+                {
+                    snapshots.Remove(processor);
+                    continue;
+                }
                 var startup = tasks.OfType<JObject>().FirstOrDefault(t => (string)t["entry"] == "GameLoginStart");
                 var server = (startup?["option"] as JArray)?.OfType<JObject>()
                     .FirstOrDefault(o => (string)o["name"] == "选择服务器");
@@ -479,6 +498,64 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
             }
             catch (Exception ex) { LoggerHelper.Warning("TKFMaa 配置迁移暂未完成：" + ex.Message); }
         }
+    }
+
+    private static void MigrateShopOptions(MaaProcessor processor, JArray savedTasks)
+    {
+        var definitions = MaaProcessor.Interface?.Option;
+        if (definitions == null || ShopGroups.Any(name => !definitions.ContainsKey(name)))
+            throw new InvalidOperationException("商城分组选项定义尚未加载");
+        // Keep the full original rows inside the instance as a recoverable release backup.
+        processor.InstanceConfiguration.SetValue("TkfmShopGroupsV1Backup", savedTasks.DeepClone());
+        var previousRows = savedTasks.OfType<JObject>().Where(t => (string)t["entry"] == "DailyShopStart").ToArray();
+        int index = 0;
+        var groupedNames = new HashSet<string>(ShopGroups.SelectMany(name => new[] { name, name + "仅购买打折商品" }));
+        foreach (var row in processor.ViewModel.TaskItemViewModels.Where(t => t.InterfaceItem?.Entry == "DailyShopStart"))
+        {
+            var previous = previousRows.ElementAtOrDefault(index++);
+            var oldOptions = (previous?["option"] as JArray ?? new JArray()).OfType<JObject>()
+                .Where(o => !string.IsNullOrEmpty((string)o["name"]))
+                .GroupBy(o => (string)o["name"]).ToDictionary(group => group.Key, group => group.First());
+            var options = (row.InterfaceItem.Option ?? new List<MaaInterface.MaaInterfaceSelectOption>())
+                .Where(option => !groupedNames.Contains(option.Name)).ToList();
+            foreach (string group in ShopGroups)
+            {
+                string source = group == "指定购买物品" || group == "交易所材料"
+                    ? "指定购买物品" : "指定协会商店购买物品";
+                var old = oldOptions.TryGetValue(group, out var exact) ? exact
+                    : oldOptions.TryGetValue(source, out var legacy) ? legacy : null;
+                var selected = old?["selected_cases"] is JArray selectedArray
+                    ? new HashSet<string>(selectedArray.Values<string>())
+                    : new HashSet<string>(source == "指定购买物品"
+                        ? new[] { "招募命令", "初级体力药水" } : new[] { "召唤契约", "阿克色记录" });
+                var definition = definitions[group];
+                options.Add(new MaaInterface.MaaInterfaceSelectOption
+                {
+                    Name = group, Index = 0, Data = new Dictionary<string, string>(),
+                    SelectedCases = definition.Cases.Where(c => selected.Contains(c.Name)).Select(c => c.Name).ToList()
+                });
+                string discount = group + "仅购买打折商品";
+                options.Add(oldOptions.TryGetValue(discount, out var oldDiscount)
+                    ? oldDiscount.ToObject<MaaInterface.MaaInterfaceSelectOption>()
+                    : new MaaInterface.MaaInterfaceSelectOption { Name = discount, Index = 0 });
+                foreach (var item in definition.Cases)
+                {
+                    if (item.PipelineOverride == null || row.InterfaceItem.PipelineOverride == null) continue;
+                    foreach (string target in item.PipelineOverride.Keys)
+                    {
+                        if (row.InterfaceItem.PipelineOverride.TryGetValue(target, out var value) && value is JObject cached)
+                        {
+                            cached.Remove("enabled");
+                            if (!cached.HasValues) row.InterfaceItem.PipelineOverride.Remove(target);
+                        }
+                    }
+                }
+            }
+            row.InterfaceItem.Option = options;
+        }
+        processor.InstanceConfiguration.SetValue(ConfigurationKeys.TaskItems,
+            processor.ViewModel.TaskItemViewModels.Where(t => !t.IsResourceOptionItem).Select(t => t.InterfaceItem).ToList());
+        processor.InstanceConfiguration.SetValue(ShopMigrationKey, true);
     }
 
     public void Dispose() { timer.Stop(); timer.Tick -= Tick; snapshots.Clear(); }
