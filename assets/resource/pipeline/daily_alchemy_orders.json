@@ -9,18 +9,17 @@
                 "custom_action": "TkfmRunWithRecovery",
                 "custom_action_param": {
                     "entry": "DailyAlchemyOrdersStartAttempt",
-                    "label": "炼金订单"
+                    "label": "炼金订单",
+                    "success_any_hit": [
+                        "DailyAlchemyOrdersDone"
+                    ]
                 }
             }
         }
     },
     "DailyAlchemyOrdersStartAttempt": {
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]CommonCloseMainGift",
-            "DailyAlchemyOrdersOpenDrawer",
-            "[JumpBack]CommonCloseReward",
-            "[JumpBack]CommonEnsureMain"
+            "DailyAlchemyOrdersScanOrder"
         ],
         "timeout": 10000
     },
@@ -29,57 +28,64 @@
             "type": "And",
             "param": {
                 "all_of": [
-                    "CommonMainReady"
-                ]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [
-                    35,
-                    630
-                ]
-            }
-        },
-        "next": [
-            "DailyAlchemyOrdersOpenAlchemy"
-        ],
-        "pre_wait_freezes": 300
-    },
-    "DailyAlchemyOrdersOpenAlchemy": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": [
-                    "派遣队1"
+                    "CommonMainReady",
+                    "__DailyAlchemyOrdersDrawerArrow"
                 ],
-                "roi": [
-                    0,
-                    520,
-                    120,
-                    70
-                ]
+                "box_index": 1
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    116,
-                    510
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyAlchemyOrdersCollect"
+            "DailyAlchemyOrdersScanOrder"
         ],
         "pre_wait_freezes": {
             "time": 300,
             "target": true,
             "timeout": 1500
-        }
+        },
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "max_hit": 6,
+        "post_delay": 800
+    },
+    "DailyAlchemyOrdersOpenAlchemy": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonMainReady",
+                    "__DailyAlchemyOrdersDrawerIcon"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "max_hit": 6,
+        "post_delay": 1000
     },
     "DailyAlchemyOrdersCollect": {
         "recognition": {
@@ -100,26 +106,44 @@
                 "target": true
             }
         },
-        "next": [
-            "[JumpBack]CommonCloseReward",
-            "DailyAlchemyOrdersScanOrder"
-        ],
         "pre_wait_freezes": {
             "time": 300,
             "target": true,
             "timeout": 1500
+        },
+        "post_delay": 1200,
+        "max_hit": 3,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：看到一键收取，点击中心；确认弹窗由统一入口处理（收取最多三次）。"
         }
     },
     "DailyAlchemyOrdersScanOrder": {
+        "recognition": {
+            "type": "DirectHit"
+        },
         "next": [
-            "[JumpBack]CommonCloseReward",
+            "DailyAlchemyOrdersCloseDeliveryReward",
             "[JumpBack]CommonWaitLoading",
+            "DailyAlchemyOrdersStartBlueProduction",
+            "DailyAlchemyOrdersSelectMaximum",
+            "DailyAlchemyOrdersSelectBlueRecipe",
+            "DailyAlchemyOrdersOpenEmptySlot",
             "DailyAlchemyOrdersDeliverVisibleOrder",
-            "DailyAlchemyOrdersVerifyComplete"
+            "DailyAlchemyOrdersCollect",
+            "DailyAlchemyOrdersReturnMain",
+            "DailyAlchemyOrdersOpenAlchemy",
+            "DailyAlchemyOrdersOpenDrawer"
         ],
-        "timeout": 5000,
+        "timeout": 12000,
+        "max_hit": 100,
         "on_error": [
-            "DailyAlchemyOrdersAbortToMain"
+            "TkfmTaskFailure"
         ]
     },
     "DailyAlchemyOrdersDeliverVisibleOrder": {
@@ -147,29 +171,34 @@
                 ]
             }
         },
-        "next": [
-            "DailyAlchemyOrdersAwaitDeliveryResult"
-        ],
-        "max_hit": 10,
         "pre_wait_freezes": {
             "time": 300,
             "target": true,
             "timeout": 1500
         },
+        "post_delay": 1200,
+        "max_hit": 10,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
         "on_error": [
-            "DailyAlchemyOrdersAbortToMain"
-        ]
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：看到可交付订单勾选标记，点击对应完整卡片；下一轮重新识别奖励或仍在的订单。"
+        }
     },
     "DailyAlchemyOrdersAbortToMain": {
         "recognition": {
             "type": "DirectHit"
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]CommonCloseReward",
-            "CommonEnsureMain"
+            "TkfmTaskFailure"
         ],
-        "timeout": 15000
+        "timeout": 1,
+        "focus": {
+            "Node.Action.Starting": "炼金：未知页面或操作次数耗尽，明确失败并交给通用恢复，不冒充完成。"
+        }
     },
     "DailyAlchemyOrdersReturnMain": {
         "recognition": {
@@ -178,13 +207,14 @@
                 "custom_recognition": "TaskCompletionGuard",
                 "custom_recognition_param": {
                     "required": [
-                        "__DailyAlchemyOrdersTitle",
-                        "__DailyAlchemyOrdersCount",
-                        "__DailyAlchemyOrdersCollectButton"
+                        "__DailyAlchemyOrdersPageReady",
+                        "__DailyAlchemyOrdersRunningSlot1",
+                        "__DailyAlchemyOrdersRunningSlot2",
+                        "__DailyAlchemyOrdersRunningSlot3"
                     ],
                     "absent": [
                         "__DailyAlchemyOrdersDeliverable",
-                        "__DailyAlchemyOrdersRewardPopup"
+                        "__DailyAlchemyOrdersEmptySlot"
                     ]
                 }
             }
@@ -198,9 +228,6 @@
                 ]
             }
         },
-        "next": [
-            "DailyAlchemyOrdersDone"
-        ],
         "pre_wait_freezes": {
             "time": 300,
             "target": [
@@ -211,18 +238,35 @@
             ],
             "timeout": 1500
         },
-        "max_hit": 3
+        "post_delay": 800,
+        "max_hit": 3,
+        "next": [
+            "DailyAlchemyOrdersFinishRouter"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersFinishRouter"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：三栏均已生产、没有可交付订单或弹窗，返回主页。"
+        }
     },
     "DailyAlchemyOrdersDone": {
-        "next": [
-            "[JumpBack]CommonWaitLoading",
-            "[JumpBack]CommonCloseMainGift",
-            "CommonStopOnMainObserve"
-        ],
-        "timeout": 1500,
-        "on_error": [
-            "DailyAlchemyOrdersReturnMain"
-        ]
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonMainReady"
+                ],
+                "box_index": 0
+            }
+        },
+        "action": {
+            "type": "DoNothing"
+        },
+        "next": [],
+        "focus": {
+            "Node.Action.Succeeded": "炼金完成：可见订单已处理，空栏已补蓝宝石999个，并已回到主界面。"
+        }
     },
     "__DailyAlchemyOrdersTitle": {
         "recognition": {
@@ -289,97 +333,48 @@
     },
     "__DailyAlchemyOrdersRewardPopup": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "expected": [
-                    "获得奖励|奖励已增加至仓库"
+                "all_of": [
+                    "__DailyAlchemyOrdersRewardTitle",
+                    "__DailyAlchemyOrdersRewardConfirm"
                 ],
-                "roi": [
-                    200,
-                    400,
-                    330,
-                    410
-                ]
+                "box_index": 1
             }
         }
     },
     "DailyAlchemyOrdersVerifyComplete": {
-        "recognition": {
-            "type": "Custom",
-            "param": {
-                "custom_recognition": "TaskCompletionGuard",
-                "custom_recognition_param": {
-                    "required": [
-                        "__DailyAlchemyOrdersTitle",
-                        "__DailyAlchemyOrdersCount",
-                        "__DailyAlchemyOrdersCollectButton"
-                    ],
-                    "absent": [
-                        "__DailyAlchemyOrdersDeliverable",
-                        "__DailyAlchemyOrdersRewardPopup"
-                    ]
-                }
-            }
-        },
-        "post_delay": 500,
         "next": [
-            "[JumpBack]CommonCloseReward",
-            "[JumpBack]CommonWaitLoading",
-            "DailyAlchemyOrdersDeliverVisibleOrder",
-            "DailyAlchemyOrdersReturnMain"
+            "DailyAlchemyOrdersScanOrder"
         ],
-        "timeout": 5000,
-        "max_hit": 3,
-        "on_error": [
-            "DailyAlchemyOrdersAbortToMain"
-        ]
+        "timeout": 12000
     },
     "DailyAlchemyOrdersAwaitDeliveryResult": {
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyAlchemyOrdersCloseDeliveryReward"
+            "DailyAlchemyOrdersScanOrder"
         ],
-        "timeout": 3500,
-        "on_error": [
-            "DailyAlchemyOrdersDeliveryRetry",
-            "DailyAlchemyOrdersAbortToMain"
-        ]
+        "timeout": 12000
     },
     "DailyAlchemyOrdersDeliverySucceeded": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "post_delay": 400,
         "next": [
             "DailyAlchemyOrdersScanOrder"
-        ]
+        ],
+        "timeout": 12000
     },
     "DailyAlchemyOrdersDeliveryRetry": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "max_hit": 1,
         "next": [
-            "DailyAlchemyOrdersDeliverVisibleOrder"
+            "DailyAlchemyOrdersScanOrder"
         ],
-        "on_error": [
-            "DailyAlchemyOrdersAbortToMain"
-        ]
+        "timeout": 12000
     },
     "DailyAlchemyOrdersCloseDeliveryReward": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "expected": [
-                    "确定",
-                    "确认"
+                "all_of": [
+                    "__DailyAlchemyOrdersRewardPopup"
                 ],
-                "roi": [
-                    300,
-                    700,
-                    120,
-                    80
-                ]
+                "box_index": 0
             }
         },
         "action": {
@@ -392,29 +387,449 @@
         },
         "pre_wait_freezes": {
             "time": 300,
-            "target": [
-                300,
-                700,
-                120,
-                80
-            ],
+            "target": true,
             "timeout": 1500
         },
-        "post_delay": 500,
+        "post_delay": 800,
+        "max_hit": 30,
         "next": [
-            "DailyAlchemyOrdersDeliverySucceeded"
-        ]
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：看到奖励弹窗的确定按钮，点击图片中心；按钮仍在则下一轮继续处理。"
+        }
     },
     "__DailyAlchemyOrdersPageReady": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": [
+                        "__DailyAlchemyOrdersTitle",
+                        "__DailyAlchemyOrdersCount",
+                        "__DailyAlchemyOrdersCollectButton"
+                    ],
+                    "absent": [
+                        "__DailyAlchemyOrdersRewardPopup",
+                        "__DailyAlchemyOrdersRecipeListTitle",
+                        "__DailyAlchemyOrdersBlueDetail"
+                    ]
+                }
+            }
+        }
+    },
+    "__DailyAlchemyOrdersDrawerArrow": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/DrawerArrow720.png",
+                "roi": [
+                    15,
+                    580,
+                    80,
+                    100
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersDrawerIcon": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/DrawerAlchemyIcon720.png",
+                "roi": [
+                    75,
+                    460,
+                    85,
+                    90
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRewardTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/RewardTitle720.png",
+                "roi": [
+                    250,
+                    450,
+                    220,
+                    110
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRewardConfirm": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/RewardConfirm720.png",
+                "roi": [
+                    240,
+                    690,
+                    240,
+                    110
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRecipeListTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/RecipeListTitle720.png",
+                "roi": [
+                    260,
+                    155,
+                    200,
+                    90
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersBlueRecipe": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/BlueRecipe720.png",
+                "roi": [
+                    90,
+                    365,
+                    200,
+                    180
+                ],
+                "threshold": 0.94
+            }
+        }
+    },
+    "__DailyAlchemyOrdersBlueDetail": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/BlueDetailTitle720.png",
+                "roi": [
+                    70,
+                    400,
+                    120,
+                    65
+                ],
+                "threshold": 0.94
+            }
+        }
+    },
+    "__DailyAlchemyOrdersMaximumButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/MaxButton720.png",
+                "roi": [
+                    275,
+                    725,
+                    170,
+                    85
+                ],
+                "threshold": 0.94
+            }
+        }
+    },
+    "__DailyAlchemyOrdersBlueQuantity999": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/BlueQuantity999720.png",
+                "roi": [
+                    285,
+                    655,
+                    155,
+                    60
+                ],
+                "threshold": 0.96
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRefineButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/RefineButton720.png",
+                "roi": [
+                    240,
+                    800,
+                    240,
+                    90
+                ],
+                "threshold": 0.94
+            }
+        }
+    },
+    "__DailyAlchemyOrdersEmptySlot": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/EmptySlot720.png",
+                "roi": [
+                    290,
+                    200,
+                    140,
+                    520
+                ],
+                "threshold": 0.94,
+                "order_by": "Vertical",
+                "index": 0
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRunningSlot1": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/Refining720.png",
+                "roi": [
+                    210,
+                    215,
+                    280,
+                    85
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRunningSlot2": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/Refining720.png",
+                "roi": [
+                    210,
+                    405,
+                    280,
+                    85
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "__DailyAlchemyOrdersRunningSlot3": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "DailyAlchemyOrders/Refining720.png",
+                "roi": [
+                    210,
+                    595,
+                    280,
+                    85
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "DailyAlchemyOrdersOpenEmptySlot": {
         "recognition": {
             "type": "And",
             "param": {
                 "all_of": [
-                    "__DailyAlchemyOrdersTitle",
-                    "__DailyAlchemyOrdersCount",
-                    "__DailyAlchemyOrdersCollectButton"
-                ]
+                    "__DailyAlchemyOrdersPageReady",
+                    "__DailyAlchemyOrdersEmptySlot"
+                ],
+                "box_index": 1
             }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 9,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：看到闲置栏，点击闲置文字中心打开配方；不操作正在炼成的队列。"
+        }
+    },
+    "DailyAlchemyOrdersSelectBlueRecipe": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyAlchemyOrdersRecipeListTitle",
+                    "__DailyAlchemyOrdersBlueRecipe"
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 9,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：看到炼金品项中的蓝宝石配方，点击蓝宝石图片。"
+        }
+    },
+    "DailyAlchemyOrdersSelectMaximum": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": [
+                        "__DailyAlchemyOrdersMaximumButton",
+                        "__DailyAlchemyOrdersBlueDetail"
+                    ],
+                    "absent": [
+                        "__DailyAlchemyOrdersBlueQuantity999"
+                    ]
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 9,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：蓝宝石数量尚未显示999，点击MAX；仍未到999则重新识别后再点。"
+        }
+    },
+    "DailyAlchemyOrdersStartBlueProduction": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyAlchemyOrdersBlueDetail",
+                    "__DailyAlchemyOrdersBlueQuantity999",
+                    "__DailyAlchemyOrdersRefineButton"
+                ],
+                "box_index": 2
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 1500,
+        "max_hit": 9,
+        "next": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersScanOrder"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：已识别蓝宝石及制作999个，点击炼金按钮；随后按实际画面继续。"
+        }
+    },
+    "DailyAlchemyOrdersFinishRouter": {
+        "next": [
+            "DailyAlchemyOrdersCloseRewardOnExit",
+            "[JumpBack]CommonWaitLoading",
+            "DailyAlchemyOrdersDone",
+            "DailyAlchemyOrdersReturnMain"
+        ],
+        "timeout": 12000,
+        "max_hit": 12,
+        "on_error": [
+            "TkfmTaskFailure"
+        ]
+    },
+    "DailyAlchemyOrdersCloseRewardOnExit": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "__DailyAlchemyOrdersRewardPopup"
+                ],
+                "box_index": 0
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
+                "target": true
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 6,
+        "next": [
+            "DailyAlchemyOrdersFinishRouter"
+        ],
+        "on_error": [
+            "DailyAlchemyOrdersFinishRouter"
+        ],
+        "focus": {
+            "Node.Action.Starting": "炼金：返回时看到奖励确定，点击后继续识别主页。"
         }
     }
 }
