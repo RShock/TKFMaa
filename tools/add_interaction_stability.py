@@ -14,6 +14,7 @@ EXEMPT_NODES = {
     "DailyStaminaSkipSweepAnimationUpper": "skip button is only available during the sweep animation",
     "GameTapTitleScreen": "title screen background is continuously animated",
     "GameLoginWaitTapScreen": "fixed lower-screen tap is the fallback while the advertisement return button is absent",
+    "TkfmRecoverySystemBack": "Android back key has no visual button target and must work on animated unknown screens",
 }
 
 
