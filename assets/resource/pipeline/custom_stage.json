@@ -163,8 +163,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -179,7 +181,10 @@
             "CustomStageActivityRouter"
         ],
         "rate_limit": 1000,
-        "max_hit": 2
+        "max_hit": 6,
+        "focus": {
+            "Node.Action.Succeeded": "自定义关卡：已点击出征图片中心，继续按当前画面识别活动入口。"
+        }
     },
     "CustomStageOpenEntry": {
         "recognition": {
@@ -191,8 +196,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -220,8 +227,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -236,7 +245,10 @@
             "CustomStageActivityRouter"
         ],
         "rate_limit": 1000,
-        "max_hit": 2
+        "max_hit": 6,
+        "focus": {
+            "Node.Action.Succeeded": "自定义关卡：已点击目前活动页签图片中心，继续识别所选活动入口。"
+        }
     },
     "CustomStageOpenLimitedActivities": {
         "enabled": true,
@@ -249,8 +261,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -265,7 +279,10 @@
             "CustomStageActivityRouter"
         ],
         "rate_limit": 1000,
-        "max_hit": 2
+        "max_hit": 6,
+        "focus": {
+            "Node.Action.Succeeded": "自定义关卡：已点击限时活动页签图片中心，继续识别所选活动入口。"
+        }
     },
     "CustomStageOpenTarget": {
         "recognition": {
@@ -279,8 +296,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
@@ -336,7 +355,7 @@
             "TkfmTaskFailure"
         ],
         "focus": {
-            "Node.Recognition.Succeeded": "自定义关卡：无状态导航在30秒内未识别到出征、活动页签、活动入口或关卡截图；请确认页面可见并检查截图"
+            "Node.Recognition.Succeeded": "自定义关卡：30秒内没有找到仍可执行的导航动作，或该按钮已达到重试上限；请检查当前页面与所选活动、关卡截图。点击已发出不代表页面已经切换。"
         }
     },
     "CustomStageConfirmDetail": {
