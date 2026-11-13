@@ -449,6 +449,40 @@ class DailyShopVerifyPurchaseDetail(CustomRecognition):
             )
 
 
+@AgentServer.custom_recognition("DailyShopPurchaseReturnedToList")
+class DailyShopPurchaseReturnedToList(CustomRecognition):
+    def analyze(self, context, argv):
+        try:
+            param = _custom_parameters(argv.custom_recognition_param)
+            shop_id = param.get("shop_id")
+            pending = _PENDING_TARGET
+            if shop_id not in ("exchange", "guild") or not pending or pending["key"][0] != shop_id:
+                return CustomRecognition.AnalyzeResult(box=None, detail={"reason": "no_matching_pending_item"})
+            if pending.get("purchase_attempts", 0) <= 0 or time.monotonic() < pending.get("purchase_retry_after", 0):
+                return CustomRecognition.AnalyzeResult(box=None, detail={"reason": "waiting_for_purchase_result"})
+            ready = context.run_recognition("__DailyShopPurchaseListReady", argv.image)
+            if ready is None or not ready.hit:
+                return CustomRecognition.AnalyzeResult(
+                    box=None, detail={"reason": "list_not_confirmed_or_popup_visible"}
+                )
+            # Same-shop currency anchors must locate complete cards. The bottom
+            # shop tab alone also appears behind a purchase modal.
+            slots = _visible_slots(context, argv.image, shop_id)
+            return CustomRecognition.AnalyzeResult(
+                box=(0, 0, 1, 1) if slots else None,
+                detail={
+                    "reason": "purchase_returned_to_list" if slots else "card_anchors_unconfirmed",
+                    "shop_id": shop_id,
+                    "target": pending["target"],
+                    "purchase_confirmed": False,
+                },
+            )
+        except Exception as error:
+            return CustomRecognition.AnalyzeResult(
+                box=None, detail={"reason": "list_check_failed", "error": str(error)}
+            )
+
+
 @AgentServer.custom_recognition("DailyShopPurchaseButtonReady")
 class DailyShopPurchaseButtonReady(CustomRecognition):
     def analyze(self, context, argv):
@@ -504,6 +538,14 @@ class DailyShopSkipPendingTarget(CustomAction):
     def run(self, context, argv):
         global _PENDING_TARGET
         if _PENDING_TARGET:
+            param = _custom_parameters(argv.custom_action_param)
+            if param.get("reason") == "returned_to_list":
+                shop_name = "交易所" if _PENDING_TARGET["key"][0] == "exchange" else "协会商店"
+                print(
+                    f"[商城购买] {_PENDING_TARGET['target']}付款页面已关闭，"
+                    f"已回到{shop_name}列表，继续检查剩余商品。",
+                    flush=True,
+                )
             # Closing an unverified detail must not reopen the same card or
             # count as a successful purchase; the total swipe budget never resets.
             _HANDLED_ITEM_KEYS.add(_PENDING_TARGET["key"])

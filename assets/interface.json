@@ -50,8 +50,7 @@
                 "协会属性石仅购买打折商品",
                 "协会调教道具",
                 "协会调教道具仅购买打折商品",
-                "指定协会商店购买物品",
-                "指定协会商店购买物品仅购买打折商品"
+                "指定协会商店购买物品"
             ],
             "doc": [
                 "分别勾选交易所和协会商店商品。商品只按固定分辨率图片识别，图片命中后直接购买，不使用 OCR 判断商品或售罄。旧文字清单已停用，请重新确认勾选项。"
@@ -1048,7 +1047,7 @@
         "指定购买物品": {
             "type": "checkbox",
             "label": "交易所 · 常用道具",
-            "description": "只购买本组勾选的商品，可全部取消。折扣限制由本组的「仅购买打折商品」开关控制；售罄商品始终跳过。",
+            "description": "只购买勾选的商品，售罄跳过。",
             "default_case": [
                 "招募命令",
                 "初级体力药水"
@@ -1086,10 +1085,9 @@
         "指定协会商店购买物品": {
             "type": "checkbox",
             "label": "协会商店 · 其他",
-            "description": "只购买本组勾选的商品，可全部取消。折扣限制由本组的「仅购买打折商品」开关控制；售罄商品始终跳过。",
+            "description": "银币不限折扣；银币打折仅买折扣商品。",
             "default_case": [
-                "召唤契约",
-                "阿克色记录"
+                "召唤契约"
             ],
             "cases": [
                 {
@@ -1108,7 +1106,16 @@
                             "enabled": true
                         }
                     },
-                    "label": "阿克色记录"
+                    "label": "阿克色"
+                },
+                {
+                    "name": "银币",
+                    "pipeline_override": {
+                        "__DailyShopGuildSilver": {
+                            "enabled": true
+                        }
+                    },
+                    "label": "银币"
                 },
                 {
                     "name": "银币（打折）",
@@ -1117,7 +1124,7 @@
                             "enabled": true
                         }
                     },
-                    "label": "银币"
+                    "label": "银币打折"
                 }
             ]
         },
@@ -1316,9 +1323,8 @@
         },
         "指定购买物品仅购买打折商品": {
             "type": "switch",
-            "label": "交易所 · 常用道具：仅购买打折商品",
+            "label": "只购买打折",
             "default_case": "Yes",
-            "description": "勾选时，商品和折扣图片须在同一卡片命中；取消后也允许购买已勾选的原价商品。",
             "cases": [
                 {
                     "name": "Yes",
@@ -1345,7 +1351,7 @@
         "交易所材料": {
             "type": "checkbox",
             "label": "交易所 · 材料",
-            "description": "只购买本组勾选的商品，可全部取消。折扣限制由本组的「仅购买打折商品」开关控制；售罄商品始终跳过。原价材料目前识别已有截图中的毒之粉、铁锭、史莱姆残液、月光水及高级合剂；其他材料缺少图片时不猜测购买。",
+            "description": "只购买已有图片的勾选材料，售罄跳过。",
             "default_case": [],
             "cases": [
                 {
@@ -1370,9 +1376,8 @@
         },
         "交易所材料仅购买打折商品": {
             "type": "switch",
-            "label": "交易所 · 材料：仅购买打折商品",
+            "label": "只购买打折",
             "default_case": "Yes",
-            "description": "勾选时，商品和折扣图片须在同一卡片命中；取消后也允许购买已勾选的原价商品。",
             "cases": [
                 {
                     "name": "Yes",
@@ -1399,7 +1404,7 @@
         "协会属性石": {
             "type": "checkbox",
             "label": "协会商店 · 属性石",
-            "description": "只购买本组勾选的商品，可全部取消。折扣限制由本组的「仅购买打折商品」开关控制；售罄商品始终跳过。洪水之石暂缺图片，预留项即使勾选也不会购买。",
+            "description": "只购买勾选的商品，售罄跳过。",
             "default_case": [],
             "cases": [
                 {
@@ -1440,10 +1445,10 @@
                 },
                 {
                     "name": "洪水之石",
-                    "label": "洪水之石（待补图片，暂不购买）",
+                    "label": "洪水之石",
                     "pipeline_override": {
                         "__DailyShopGuildFloodStone": {
-                            "enabled": false
+                            "enabled": true
                         }
                     }
                 }
@@ -1451,9 +1456,8 @@
         },
         "协会属性石仅购买打折商品": {
             "type": "switch",
-            "label": "协会商店 · 属性石：仅购买打折商品",
+            "label": "只购买打折",
             "default_case": "Yes",
-            "description": "勾选时，商品和折扣图片须在同一卡片命中；取消后也允许购买已勾选的原价商品。",
             "cases": [
                 {
                     "name": "Yes",
@@ -1480,8 +1484,10 @@
         "协会调教道具": {
             "type": "checkbox",
             "label": "协会商店 · 调教道具",
-            "description": "只购买本组勾选的商品，可全部取消。折扣限制由本组的「仅购买打折商品」开关控制；售罄商品始终跳过。",
-            "default_case": [],
+            "description": "只购买勾选的商品，售罄跳过。",
+            "default_case": [
+                "匕首"
+            ],
             "cases": [
                 {
                     "name": "藤蔓（打折）",
@@ -1527,14 +1533,31 @@
                         }
                     },
                     "label": "八目鳗"
+                },
+                {
+                    "name": "蜡烛",
+                    "label": "蜡烛",
+                    "pipeline_override": {
+                        "__DailyShopGuildCandle": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "匕首",
+                    "label": "匕首",
+                    "pipeline_override": {
+                        "__DailyShopGuildDagger": {
+                            "enabled": true
+                        }
+                    }
                 }
             ]
         },
         "协会调教道具仅购买打折商品": {
             "type": "switch",
-            "label": "协会商店 · 调教道具：仅购买打折商品",
+            "label": "只购买打折",
             "default_case": "Yes",
-            "description": "勾选时，商品和折扣图片须在同一卡片命中；取消后也允许购买已勾选的原价商品。",
             "cases": [
                 {
                     "name": "Yes",
@@ -1550,34 +1573,6 @@
                     "name": "No",
                     "pipeline_override": {
                         "DailyShopGuildToolsPolicy": {
-                            "attach": {
-                                "discount_only": false
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-        "指定协会商店购买物品仅购买打折商品": {
-            "type": "switch",
-            "label": "协会商店 · 其他：仅购买打折商品",
-            "default_case": "Yes",
-            "description": "勾选时，商品和折扣图片须在同一卡片命中；取消后也允许购买已勾选的原价商品。",
-            "cases": [
-                {
-                    "name": "Yes",
-                    "pipeline_override": {
-                        "DailyShopGuildOtherPolicy": {
-                            "attach": {
-                                "discount_only": true
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "No",
-                    "pipeline_override": {
-                        "DailyShopGuildOtherPolicy": {
                             "attach": {
                                 "discount_only": false
                             }

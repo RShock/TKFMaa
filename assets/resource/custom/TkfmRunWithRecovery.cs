@@ -446,7 +446,7 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
 internal sealed class TkfmGameOptionsMigration : IDisposable
 {
     private const string MigrationKey = "TkfmGameOptionsV2";
-    private const string ShopMigrationKey = "TkfmShopGroupsV1";
+    private const string ShopMigrationKey = "TkfmShopGroupsV2";
     private static readonly string[] ShopGroups = {
         "指定购买物品", "交易所材料", "协会属性石", "协会调教道具", "指定协会商店购买物品"
     };
@@ -473,6 +473,8 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
                     : processor.InstanceConfiguration.GetValue("TaskItems", new JArray());
                 if (!processor.InstanceConfiguration.GetValue(ShopMigrationKey, false))
                     MigrateShopOptions(processor, tasks);
+                if (!processor.InstanceConfiguration.GetValue("TkfmShopDaggerV1", false))
+                    MigrateShopDagger(processor, tasks);
                 if (processor.InstanceConfiguration.GetValue(MigrationKey, false))
                 {
                     snapshots.Remove(processor);
@@ -530,13 +532,42 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
         }
     }
 
+    private static void MigrateShopDagger(MaaProcessor processor, JArray savedTasks)
+    {
+        var definitions = MaaProcessor.Interface?.Option;
+        if (definitions == null || !definitions.TryGetValue("协会调教道具", out var definition)
+            || !definition.Cases.Any(item => item.Name == "匕首"))
+            throw new InvalidOperationException("匕首选项尚未加载");
+        processor.InstanceConfiguration.SetValue("TkfmShopDaggerV1Backup", savedTasks.DeepClone());
+        foreach (var row in processor.ViewModel.TaskItemViewModels.Where(t => t.InterfaceItem?.Entry == "DailyShopStart"))
+        {
+            var options = row.InterfaceItem.Option ??= new List<MaaInterface.MaaInterfaceSelectOption>();
+            var group = options.FirstOrDefault(option => option.Name == "协会调教道具");
+            if (group == null)
+            {
+                group = new MaaInterface.MaaInterfaceSelectOption
+                {
+                    Name = "协会调教道具", Index = 0, Data = new Dictionary<string, string>(),
+                    SelectedCases = new List<string>()
+                };
+                options.Add(group);
+            }
+            group.SelectedCases ??= new List<string>();
+            if (!group.SelectedCases.Contains("匕首")) group.SelectedCases.Add("匕首");
+            row.InterfaceItem.PipelineOverride?.Remove("__DailyShopGuildDagger");
+        }
+        processor.InstanceConfiguration.SetValue(ConfigurationKeys.TaskItems,
+            processor.ViewModel.TaskItemViewModels.Where(t => !t.IsResourceOptionItem).Select(t => t.InterfaceItem).ToList());
+        processor.InstanceConfiguration.SetValue("TkfmShopDaggerV1", true);
+    }
+
     private static void MigrateShopOptions(MaaProcessor processor, JArray savedTasks)
     {
         var definitions = MaaProcessor.Interface?.Option;
         if (definitions == null || ShopGroups.Any(name => !definitions.ContainsKey(name)))
             throw new InvalidOperationException("商城分组选项定义尚未加载");
         // Keep the full original rows inside the instance as a recoverable release backup.
-        processor.InstanceConfiguration.SetValue("TkfmShopGroupsV1Backup", savedTasks.DeepClone());
+        processor.InstanceConfiguration.SetValue(ShopMigrationKey + "Backup", savedTasks.DeepClone());
         var previousRows = savedTasks.OfType<JObject>().Where(t => (string)t["entry"] == "DailyShopStart").ToArray();
         int index = 0;
         var groupedNames = new HashSet<string>(ShopGroups.SelectMany(name => new[] { name, name + "仅购买打折商品" }));
@@ -557,7 +588,7 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
                 var selected = old?["selected_cases"] is JArray selectedArray
                     ? new HashSet<string>(selectedArray.Values<string>())
                     : new HashSet<string>(source == "指定购买物品"
-                        ? new[] { "招募命令", "初级体力药水" } : new[] { "召唤契约", "阿克色记录" });
+                        ? new[] { "招募命令", "初级体力药水" } : new[] { "召唤契约" });
                 var definition = definitions[group];
                 options.Add(new MaaInterface.MaaInterfaceSelectOption
                 {
@@ -565,9 +596,10 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
                     SelectedCases = definition.Cases.Where(c => selected.Contains(c.Name)).Select(c => c.Name).ToList()
                 });
                 string discount = group + "仅购买打折商品";
-                options.Add(oldOptions.TryGetValue(discount, out var oldDiscount)
-                    ? oldDiscount.ToObject<MaaInterface.MaaInterfaceSelectOption>()
-                    : new MaaInterface.MaaInterfaceSelectOption { Name = discount, Index = 0 });
+                if (definitions.ContainsKey(discount))
+                    options.Add(oldOptions.TryGetValue(discount, out var oldDiscount)
+                        ? oldDiscount.ToObject<MaaInterface.MaaInterfaceSelectOption>()
+                        : new MaaInterface.MaaInterfaceSelectOption { Name = discount, Index = 0 });
                 foreach (var item in definition.Cases)
                 {
                     if (item.PipelineOverride == null || row.InterfaceItem.PipelineOverride == null) continue;
@@ -581,6 +613,7 @@ internal sealed class TkfmGameOptionsMigration : IDisposable
                     }
                 }
             }
+            row.InterfaceItem.PipelineOverride?.Remove("DailyShopGuildOtherPolicy");
             row.InterfaceItem.Option = options;
         }
         processor.InstanceConfiguration.SetValue(ConfigurationKeys.TaskItems,

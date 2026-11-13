@@ -18,18 +18,18 @@ SHOP_GROUPS = (
     (
         "协会调教道具",
         "指定协会商店购买物品",
-        ("藤蔓（打折）", "淫魔虫（打折）", "电击棒（打折）", "史莱姆（打折）", "八目鳗（打折）"),
+        ("藤蔓（打折）", "淫魔虫（打折）", "电击棒（打折）", "史莱姆（打折）", "八目鳗（打折）", "蜡烛", "匕首"),
     ),
-    ("指定协会商店购买物品", "指定协会商店购买物品", ("召唤契约", "阿克色记录", "银币（打折）")),
+    ("指定协会商店购买物品", "指定协会商店购买物品", ("召唤契约", "阿克色记录", "银币", "银币（打折）")),
 )
 SHOP_DEFAULTS = {
     "指定购买物品": ["招募命令", "初级体力药水"],
-    "指定协会商店购买物品": ["召唤契约", "阿克色记录"],
+    "指定协会商店购买物品": ["召唤契约"],
 }
 
 
 def migrate_shop_groups(config):
-    if config.get("TkfmShopGroupsV1") is True:
+    if config.get("TkfmShopGroupsV2") is True:
         return
     interface_path = Path(__file__).resolve().parent.parent / "assets/interface.json"
     interface = json.loads(interface_path.read_text(encoding="utf-8"))
@@ -57,10 +57,12 @@ def migrate_shop_groups(config):
                 "selected_cases": [name for name in names if name in selected],
             })
             switch = group + "仅购买打折商品"
-            options.append(copy.deepcopy(previous.get(switch, {"name": switch, "index": 0})))
+            if switch in interface["option"]:
+                options.append(copy.deepcopy(previous.get(switch, {"name": switch, "index": 0})))
         task["option"] = options
         # Cached task overrides must not resurrect unchecked products after regrouping.
         overrides = task.get("pipeline_override", {})
+        overrides.pop("DailyShopGuildOtherPolicy", None)
         for node in target_nodes:
             value = overrides.get(node)
             if isinstance(value, dict):
@@ -68,6 +70,7 @@ def migrate_shop_groups(config):
                 if not value:
                     overrides.pop(node, None)
     config["TkfmShopGroupsV1"] = True
+    config["TkfmShopGroupsV2"] = True
 
 
 def find_count(options):
@@ -80,10 +83,33 @@ def find_count(options):
     return None
 
 
+def migrate_shop_dagger(config):
+    if config.get("TkfmShopDaggerV1") is True:
+        return
+    config["TkfmShopDaggerV1Backup"] = copy.deepcopy(config.get("TaskItems", []))
+    for task in config.get("TaskItems", []):
+        if task.get("entry") != "DailyShopStart":
+            continue
+        options = task.setdefault("option", [])
+        group = next((option for option in options if option.get("name") == "协会调教道具"), None)
+        if group is None:
+            group = {"name": "协会调教道具", "index": 0, "data": {}, "selected_cases": []}
+            options.append(group)
+        selected = group.get("selected_cases")
+        if not isinstance(selected, list):
+            selected = []
+            group["selected_cases"] = selected
+        if "匕首" not in selected:
+            selected.append("匕首")
+        task.get("pipeline_override", {}).pop("__DailyShopGuildDagger", None)
+    config["TkfmShopDaggerV1"] = True
+
+
 def migrate(config):
     # This also applies to instances whose task choices were already migrated.
     config["UseSeparateScreenshotTasker"] = False
     migrate_shop_groups(config)
+    migrate_shop_dagger(config)
     if config.get("TkfmGameOptionsV2") is True:
         return
     tasks = config.get("TaskItems", [])
