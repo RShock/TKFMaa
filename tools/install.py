@@ -18,7 +18,7 @@ from install_first_run import install_first_run
 
 working_dir = Path(__file__).parent.parent.resolve()
 install_path = working_dir / Path("install")
-version = len(sys.argv) > 1 and sys.argv[1] or "v1.2"
+version = len(sys.argv) > 1 and sys.argv[1] or "v1.4"
 
 # the first parameter is self name
 if sys.argv.__len__() < 4:

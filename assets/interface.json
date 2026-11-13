@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "",
     "github": "https://github.com/RShock/TKFMaaR",
-    "version": "1.2",
+    "version": "1.4",
     "controller": [
         {
             "name": "安卓端",
