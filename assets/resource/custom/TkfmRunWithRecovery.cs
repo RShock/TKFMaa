@@ -52,7 +52,8 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                 return FinishFailure(processor, "异常恢复入口发生递归，拒绝再次进入。", false);
             registered = true;
 
-            // Snapshot policy before starting; settings are disabled while a queue is running.
+            // Read policy once per module. Runtime edits apply to later modules;
+            // retries and a paused current module retain the same policy and quotas.
             failureBehavior = GetFailureBehavior(processor);
             bool restartOnFailure = failureBehavior == RestartBehavior;
             continueAfterFailure = processor.InstanceConfiguration.GetValue(

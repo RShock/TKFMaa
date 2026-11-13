@@ -187,6 +187,10 @@ public sealed class TkfmCustomStage : IMaaCustomAction
     internal static bool Busy(MaaProcessor processor) => processor.IsClosed || processor.IsConnecting
         || processor.IsTaskRunActive || processor.ViewModel?.IsRunning == true || processor.TaskQueue.Count > 0;
 
+    // Editing only changes saved configuration. Running tasks already own their overrides
+    // and immutable image paths; device connection/reconfiguration remains unavailable.
+    internal static bool EditingBlocked(MaaProcessor processor) => processor.IsClosed || processor.IsConnecting;
+
     internal static JObject ReadConfig(MaaProcessor processor)
     {
         var config = (JObject)processor.InstanceConfiguration.GetValue(ConfigKey, new JObject()).DeepClone();
@@ -286,7 +290,7 @@ internal sealed class CustomStageUI : IDisposable
     private static void Select(MaaProcessor processor, DragItemViewModel task, CustomStageChoice choice)
     {
         var option = StageOption(task);
-        if (option == null || TkfmCustomStage.Busy(processor)) return;
+        if (option == null || TkfmCustomStage.EditingBlocked(processor)) return;
         option.Index = choice.Index;
         option.Data ??= new Dictionary<string, string>();
         if (string.IsNullOrEmpty(choice.ProfileId)) option.Data.Remove(ProfileDataKey);
@@ -368,9 +372,12 @@ internal sealed class CustomStageUI : IDisposable
             foreach (var processor in MaaProcessor.Processors.ToArray())
             {
                 var vm = processor.ViewModel;
-                if (vm == null || TkfmCustomStage.Busy(processor)) continue;
-                Migrate(processor, customIndex);
-                NormalizeStaminaChoices(processor, customIndex);
+                if (vm == null || TkfmCustomStage.EditingBlocked(processor)) continue;
+                if (!TkfmCustomStage.Busy(processor))
+                {
+                    Migrate(processor, customIndex);
+                    NormalizeStaminaChoices(processor, customIndex);
+                }
                 if (subscriptions.ContainsKey(vm)) continue;
                 Action<DragItemViewModel, bool> handler = (task, visible) =>
                 {
@@ -398,7 +405,7 @@ internal sealed class CustomStageUI : IDisposable
                     if (!combo.IsVisible || combo.GetVisualAncestors().OfType<Control>().Any(parent => !parent.IsVisible)) continue;
                     if (!ReferenceEquals(combo.ItemsSource, definition.Cases)
                         || !active.TryGetValue(vm, out var task) || task.InterfaceItem?.Entry != "DailyStaminaStart") continue;
-                    if (TkfmCustomStage.Busy(vm.Processor)) continue;
+                    if (TkfmCustomStage.EditingBlocked(vm.Processor)) continue;
                     Install(combo, vm.Processor, task, definition, customIndex);
                 }
             }
@@ -427,7 +434,7 @@ internal sealed class CustomStageUI : IDisposable
         manage.Click += (_, __) => row.Owner.Open(row, false);
         combo.SelectionChanged += (_, __) =>
         {
-            if (row.Updating || row.Owner.disposed || TkfmCustomStage.Busy(processor)) return;
+            if (row.Updating || row.Owner.disposed || TkfmCustomStage.EditingBlocked(processor)) return;
             var choice = combo.SelectedItem as CustomStageChoice;
             if (choice == null) return;
             if (choice.Add)
@@ -443,7 +450,7 @@ internal sealed class CustomStageUI : IDisposable
     private void Refresh(CustomStageSelectRow row, MaaInterface.MaaInterfaceOption definition, int customIndex)
     {
         row.Owner = this;
-        bool busy = TkfmCustomStage.Busy(row.Processor);
+        bool busy = TkfmCustomStage.EditingBlocked(row.Processor);
         row.Combo.IsEnabled = row.Manage.IsEnabled = !busy;
         if (busy) return;
         var config = TkfmCustomStage.ReadConfig(row.Processor);
@@ -480,14 +487,14 @@ internal sealed class CustomStageUI : IDisposable
 
     private async void Open(CustomStageSelectRow row, bool add)
     {
-        if (disposed || TkfmCustomStage.Busy(row.Processor)) return;
+        if (disposed || TkfmCustomStage.EditingBlocked(row.Processor)) return;
         if (editor != null) { editor.Activate(); return; }
         try
         {
             var window = new CustomStageEditor(row.Processor, SelectedId(row.Task), add);
             window.Saved += id =>
             {
-                if (disposed || string.IsNullOrEmpty(id) || TkfmCustomStage.Busy(row.Processor)) return;
+                if (disposed || string.IsNullOrEmpty(id) || TkfmCustomStage.EditingBlocked(row.Processor)) return;
                 var cases = MaaProcessor.Interface.Option["体力消耗关卡"].Cases;
                 int index = cases.FindIndex(c => c.Name == CaseName);
                 if (index < 0) return;
@@ -549,7 +556,7 @@ internal sealed class CustomStageEditor : Window
         foreach (var item in (config["profiles"] as JArray ?? new JArray()).OfType<JObject>())
             drafts.Add(new CustomStageDraft((JObject)item.DeepClone()));
         form.Children.Add(new TextBlock { Text = "命名配置", FontSize = 20 });
-        form.Children.Add(new TextBlock { Text = "保存后会选入当前消耗体力步骤。切换配置保留本窗口中的编辑；关闭窗口会放弃尚未保存的修改。",
+        form.Children.Add(new TextBlock { Text = "运行中也可编辑和保存。关卡选择下次启动队列生效；已保存配置的图片和体力消耗在该步骤开始时读取，当前正在执行的步骤保持原值。切换配置保留本窗口编辑，关闭窗口放弃未保存的修改。",
             TextWrapping = TextWrapping.Wrap });
         form.Children.Add(choices);
         var tools = new WrapPanel { Orientation = Avalonia.Layout.Orientation.Horizontal };
@@ -594,9 +601,9 @@ internal sealed class CustomStageEditor : Window
         };
         timer.Tick += (_, __) =>
         {
-            bool busy = TkfmCustomStage.Busy(processor);
+            bool busy = TkfmCustomStage.EditingBlocked(processor);
             form.IsEnabled = !busy; save.IsEnabled = !busy;
-            if (busy) status.Text = "任务正在运行或设备正在连接，暂时不能编辑或截图。";
+            if (busy) status.Text = "设备正在连接或实例已关闭，暂时不能编辑或截图。";
         };
         timer.Start();
         Closed += (_, __) =>
@@ -669,7 +676,7 @@ internal sealed class CustomStageEditor : Window
 
     private void Add(bool copy)
     {
-        if (TkfmCustomStage.Busy(processor)) return;
+        if (TkfmCustomStage.EditingBlocked(processor)) return;
         Remember();
         var data = copy && current != null ? (JObject)current.Data.DeepClone() : new JObject { ["cost"] = 50 };
         string stem = copy && current != null ? ((string)current.Data["name"] ?? "配置") + " 副本" : "新配置";
@@ -685,7 +692,7 @@ internal sealed class CustomStageEditor : Window
 
     private void Delete()
     {
-        if (TkfmCustomStage.Busy(processor) || current == null) return;
+        if (TkfmCustomStage.EditingBlocked(processor) || current == null) return;
         if (confirmDelete != (string)current.Data["id"])
         {
             confirmDelete = (string)current.Data["id"];
@@ -703,9 +710,9 @@ internal sealed class CustomStageEditor : Window
             status.Text = "请先新增并选择一份自定义关卡配置，再设置截图。";
             return;
         }
-        if (TkfmCustomStage.Busy(processor))
+        if (TkfmCustomStage.EditingBlocked(processor))
         {
-            status.Text = "任务正在运行或设备正在连接，暂时不能截图。请停止任务后重试。";
+            status.Text = "设备正在连接或实例已关闭，暂时不能截图。请连接完成后重试。";
             return;
         }
         if (capture != null)
@@ -721,7 +728,7 @@ internal sealed class CustomStageEditor : Window
             var window = new CustomStageCapture(processor, stage);
             capture = window;
             var result = await window.ShowDialog<CustomStageSelection>(this);
-            if (closed || result == null || TkfmCustomStage.Busy(processor)) return;
+            if (closed || result == null || TkfmCustomStage.EditingBlocked(processor)) return;
             if (stage) { selected.Stage = result.Template; selected.Page = result.Page; }
             else selected.Entry = result.Template;
             Load(); status.Text = "已截取" + (stage ? "关卡" : "活动入口") + "，点击保存后生效。";
@@ -737,7 +744,7 @@ internal sealed class CustomStageEditor : Window
 
     private void Save()
     {
-        if (closed || TkfmCustomStage.Busy(processor)) return;
+        if (closed || TkfmCustomStage.EditingBlocked(processor)) return;
         Remember();
         try
         {
@@ -784,7 +791,8 @@ internal sealed class CustomStageEditor : Window
                 drafts[i].Entry = drafts[i].Stage = drafts[i].Page = null;
             }
             RefreshChoices();
-            status.Text = current == null ? "已保存：没有自定义关卡。" : "已保存，当前消耗体力关卡：“" + current + "”。可关闭窗口继续设置其他选项。";
+            status.Text = current == null ? "已保存：没有自定义关卡；正在执行的步骤继续使用已加载的配置。"
+                : "已保存关卡：“" + current + "”。关卡选择下次启动队列生效；图片修改在该步骤下次加载时生效。";
             Saved?.Invoke((string)current?.Data["id"] ?? "");
             processor.AddLog("[自定义关卡] 已保存" + drafts.Count + "份配置；默认：" + (current?.ToString() ?? "无"), changeColor: false);
         }
@@ -864,7 +872,7 @@ internal sealed class CustomStageCapture : Window
         };
         confirm.Click += (_, __) =>
         {
-            if (closed || !frozen || !confirm.IsEnabled || TkfmCustomStage.Busy(processor)) return;
+            if (closed || !frozen || !confirm.IsEnabled || TkfmCustomStage.EditingBlocked(processor)) return;
             try
             {
                 EnsureLiveView();

@@ -125,8 +125,11 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
         {
             var existing = old.GetVisualDescendants().OfType<ComboBox>()
                 .FirstOrDefault(combo => combo.Name == "TkfmFailureBehavior");
-            if (existing != null) existing.IsEnabled = processor.ViewModel?.IsRunning != true;
-            return;
+            if (existing != null && ReferenceEquals(existing.Tag, processor))
+            {
+                existing.IsEnabled = !processor.IsClosed && !processor.IsConnecting;
+                return;
+            }
         }
         if (old != null) root.Children.Remove(old);
 
@@ -146,15 +149,16 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
         var behavior = new ComboBox
         {
             Name = "TkfmFailureBehavior",
+            Tag = processor,
             ItemsSource = new[] { "重启", "暂停" },
             SelectedIndex = GetFailureBehavior(processor) == RestartBehavior ? 0 : 1,
             Width = 215,
             MinHeight = 36,
             HorizontalAlignment = HorizontalAlignment.Right,
-            IsEnabled = processor.ViewModel?.IsRunning != true
+            IsEnabled = !processor.IsClosed && !processor.IsConnecting
         };
         ToolTip.SetTip(behavior,
-            "故障时先关闭已识别的公告、签到或广告，也可识图点击左上返回按钮；每个任务合计最多两次。仍失败时：重启游戏一次并重做，或暂停等待人工处理。");
+            "每个步骤开始时读取此设置，运行中修改从后续尚未开始的步骤生效。故障时先关闭已识别的公告、签到或广告，也可识图点击左上返回按钮；仍失败时重启一次或暂停。");
         behavior.SelectionChanged += (_, __) =>
         {
             if (behavior.SelectedIndex < 0) return;
@@ -163,7 +167,8 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
             // Keep the previous boolean key synchronized for configurations opened by older builds.
             processor.InstanceConfiguration.SetValue(LegacyRestartSetting, value == RestartBehavior);
             processor.AddLog("[开发者设置] 遇到故障时行为已设置为"
-                + (value == RestartBehavior ? "“重启”。" : "“暂停”。"), changeColor: false);
+                + (value == RestartBehavior ? "“重启”。" : "“暂停”。")
+                + "后续步骤开始时生效，当前步骤沿用开始时的设置。", changeColor: false);
         };
 
         var behaviorRow = CreateRow("遇到故障时行为", behavior);
