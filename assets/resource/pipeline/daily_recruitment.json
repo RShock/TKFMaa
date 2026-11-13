@@ -29,6 +29,7 @@
             "DailyRecruitmentSlot4CountLeader",
             "DailyRecruitmentCollectSkip",
             "DailyRecruitmentCollectClose",
+            "DailyRecruitmentCollectResumeCycle",
             "DailyRecruitmentCollectResults",
             "DailyRecruitmentCycleEntry",
             "DailyRecruitmentSlot1Open",
@@ -37,7 +38,8 @@
             "DailyRecruitmentSlot4Open",
             "DailyRecruitmentOverviewComplete",
             "DailyRecruitmentOpenFromMain",
-            "[JumpBack]CommonEnsureMain"
+            "[JumpBack]CommonEnsureMain",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -56,14 +58,17 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
             "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentOpenFullRegion"
+            "DailyRecruitmentOpenFullRegion",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 3,
         "on_error": [
@@ -97,14 +102,17 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
             "[JumpBack]CommonWaitLoading",
-            "[JumpBack]DailyRecruitmentStartAttempt"
+            "[JumpBack]DailyRecruitmentStartAttempt",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -130,13 +138,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentCollectResultRouter"
+            "DailyRecruitmentCollectResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -167,13 +178,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentCollectResultRouter"
+            "DailyRecruitmentCollectResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "post_delay": 200,
         "timeout": 20000,
@@ -191,13 +205,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentCollectReturnRouter"
+            "DailyRecruitmentCollectReturnRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -215,7 +232,8 @@
     },
     "DailyRecruitmentCollectCloseFallback": {
         "next": [
-            "DailyRecruitmentCollectResultRouter"
+            "DailyRecruitmentCollectResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 20000
     },
@@ -251,7 +269,8 @@
             "DailyRecruitmentSlot2Open",
             "DailyRecruitmentSlot3Open",
             "DailyRecruitmentSlot4Open",
-            "DailyRecruitmentOverviewComplete"
+            "DailyRecruitmentOverviewComplete",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -274,14 +293,17 @@
             "type": "DoNothing"
         },
         "next": [
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentCollectResumeCycle",
+            "DailyRecruitmentCycleRouter",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentCycleRouter": {
         "next": [
             "DailyRecruitmentBudgetFinished",
             "DailyRecruitmentCycleGate",
-            "TkfmTaskFailure"
+            "TkfmTaskFailure",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -297,7 +319,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 101
     },
@@ -309,7 +332,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentAfterSlots"
+            "DailyRecruitmentAfterSlots",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentCancelSetupOnError": {
@@ -324,13 +348,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -355,13 +382,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot1Decision"
+            "DailyRecruitmentSlot1Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "on_error": [
             "DailyRecruitmentCancelSetupOnError"
@@ -408,13 +438,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot2Decision"
+            "DailyRecruitmentSlot2Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "on_error": [
             "DailyRecruitmentCancelSetupOnError"
@@ -461,13 +494,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot3Decision"
+            "DailyRecruitmentSlot3Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "on_error": [
             "DailyRecruitmentCancelSetupOnError"
@@ -514,13 +550,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot4Decision"
+            "DailyRecruitmentSlot4Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "on_error": [
             "DailyRecruitmentCancelSetupOnError"
@@ -561,7 +600,8 @@
             "DailyRecruitmentSlot1RecruitGuaranteed",
             "DailyRecruitmentSlot1Refresh",
             "DailyRecruitmentSlot1RecruitFallback",
-            "DailyRecruitmentSlot1Decision"
+            "DailyRecruitmentSlot1Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000,
         "recognition": {
@@ -597,7 +637,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1CountLeader"
+            "DailyRecruitmentSlot1CountLeader",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -633,7 +674,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1Decision"
+            "DailyRecruitmentSlot1Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 3,
         "pre_wait_freezes": {
@@ -663,7 +705,8 @@
         },
         "next": [
             "DailyRecruitmentSlot1NineHoursReady",
-            "DailyRecruitmentSlot1SetNineHours"
+            "DailyRecruitmentSlot1SetNineHours",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot1RecruitFallback": {
@@ -678,7 +721,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1StartRecruitFallback"
+            "DailyRecruitmentSlot1StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot1SetNineHours": {
@@ -704,7 +748,8 @@
         "repeat": 1,
         "repeat_delay": 120,
         "next": [
-            "DailyRecruitmentSlot1NineHoursReady"
+            "DailyRecruitmentSlot1NineHoursReady",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -731,13 +776,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag1Router"
+            "DailyRecruitmentSlot1SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -765,13 +813,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag2Router"
+            "DailyRecruitmentSlot1SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -799,13 +850,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag3Router"
+            "DailyRecruitmentSlot1SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -841,7 +895,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot1CountRecruit",
-            "DailyRecruitmentSlot1StartRecruitFallback"
+            "DailyRecruitmentSlot1StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -879,7 +934,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot1CountRecruit",
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -902,7 +958,8 @@
             "DailyRecruitmentSlot2RecruitGuaranteed",
             "DailyRecruitmentSlot2Refresh",
             "DailyRecruitmentSlot2RecruitFallback",
-            "DailyRecruitmentSlot2Decision"
+            "DailyRecruitmentSlot2Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000,
         "recognition": {
@@ -938,7 +995,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2CountLeader"
+            "DailyRecruitmentSlot2CountLeader",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -974,7 +1032,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2Decision"
+            "DailyRecruitmentSlot2Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 3,
         "pre_wait_freezes": {
@@ -1004,7 +1063,8 @@
         },
         "next": [
             "DailyRecruitmentSlot2NineHoursReady",
-            "DailyRecruitmentSlot2SetNineHours"
+            "DailyRecruitmentSlot2SetNineHours",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot2RecruitFallback": {
@@ -1019,7 +1079,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2StartRecruitFallback"
+            "DailyRecruitmentSlot2StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot2SetNineHours": {
@@ -1045,7 +1106,8 @@
         "repeat": 1,
         "repeat_delay": 120,
         "next": [
-            "DailyRecruitmentSlot2NineHoursReady"
+            "DailyRecruitmentSlot2NineHoursReady",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1072,13 +1134,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag1Router"
+            "DailyRecruitmentSlot2SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1106,13 +1171,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag2Router"
+            "DailyRecruitmentSlot2SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1140,13 +1208,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag3Router"
+            "DailyRecruitmentSlot2SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1182,7 +1253,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot2CountRecruit",
-            "DailyRecruitmentSlot2StartRecruitFallback"
+            "DailyRecruitmentSlot2StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1220,7 +1292,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot2CountRecruit",
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1243,7 +1316,8 @@
             "DailyRecruitmentSlot3RecruitGuaranteed",
             "DailyRecruitmentSlot3Refresh",
             "DailyRecruitmentSlot3RecruitFallback",
-            "DailyRecruitmentSlot3Decision"
+            "DailyRecruitmentSlot3Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000,
         "recognition": {
@@ -1279,7 +1353,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3CountLeader"
+            "DailyRecruitmentSlot3CountLeader",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1315,7 +1390,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3Decision"
+            "DailyRecruitmentSlot3Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 3,
         "pre_wait_freezes": {
@@ -1345,7 +1421,8 @@
         },
         "next": [
             "DailyRecruitmentSlot3NineHoursReady",
-            "DailyRecruitmentSlot3SetNineHours"
+            "DailyRecruitmentSlot3SetNineHours",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot3RecruitFallback": {
@@ -1360,7 +1437,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3StartRecruitFallback"
+            "DailyRecruitmentSlot3StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot3SetNineHours": {
@@ -1386,7 +1464,8 @@
         "repeat": 1,
         "repeat_delay": 120,
         "next": [
-            "DailyRecruitmentSlot3NineHoursReady"
+            "DailyRecruitmentSlot3NineHoursReady",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1413,13 +1492,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag1Router"
+            "DailyRecruitmentSlot3SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1447,13 +1529,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag2Router"
+            "DailyRecruitmentSlot3SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1481,13 +1566,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag3Router"
+            "DailyRecruitmentSlot3SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1523,7 +1611,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot3CountRecruit",
-            "DailyRecruitmentSlot3StartRecruitFallback"
+            "DailyRecruitmentSlot3StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1561,7 +1650,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot3CountRecruit",
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1584,7 +1674,8 @@
             "DailyRecruitmentSlot4RecruitGuaranteed",
             "DailyRecruitmentSlot4Refresh",
             "DailyRecruitmentSlot4RecruitFallback",
-            "DailyRecruitmentSlot4Decision"
+            "DailyRecruitmentSlot4Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000,
         "recognition": {
@@ -1620,7 +1711,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4CountLeader"
+            "DailyRecruitmentSlot4CountLeader",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1656,7 +1748,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4Decision"
+            "DailyRecruitmentSlot4Decision",
+            "DailyRecruitmentResumeFromMain"
         ],
         "max_hit": 3,
         "pre_wait_freezes": {
@@ -1686,7 +1779,8 @@
         },
         "next": [
             "DailyRecruitmentSlot4NineHoursReady",
-            "DailyRecruitmentSlot4SetNineHours"
+            "DailyRecruitmentSlot4SetNineHours",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot4RecruitFallback": {
@@ -1701,7 +1795,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4StartRecruitFallback"
+            "DailyRecruitmentSlot4StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot4SetNineHours": {
@@ -1727,7 +1822,8 @@
         "repeat": 1,
         "repeat_delay": 120,
         "next": [
-            "DailyRecruitmentSlot4NineHoursReady"
+            "DailyRecruitmentSlot4NineHoursReady",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1754,13 +1850,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag1Router"
+            "DailyRecruitmentSlot4SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1788,13 +1887,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag2Router"
+            "DailyRecruitmentSlot4SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1822,13 +1924,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag3Router"
+            "DailyRecruitmentSlot4SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1864,7 +1969,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot4CountRecruit",
-            "DailyRecruitmentSlot4StartRecruitFallback"
+            "DailyRecruitmentSlot4StartRecruitFallback",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1902,7 +2008,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentSlot4CountRecruit",
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -1921,7 +2028,8 @@
     },
     "DailyRecruitmentAfterSlots": {
         "next": [
-            "DailyRecruitmentImmediateRecruitAllStart"
+            "DailyRecruitmentImmediateRecruitAllStart",
+            "DailyRecruitmentResumeFromMain"
         ],
         "action": {
             "type": "Custom",
@@ -1933,13 +2041,15 @@
     },
     "DailyRecruitmentImmediateRecruitAllStart": {
         "next": [
-            "DailyRecruitmentImmediateSlot1Router"
+            "DailyRecruitmentImmediateSlot1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
     "DailyRecruitmentImmediateRecruitButton": {
         "next": [
-            "DailyRecruitmentImmediateSlot1Router"
+            "DailyRecruitmentImmediateSlot1Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentImmediateRecruitButton": {
@@ -1959,7 +2069,8 @@
     },
     "DailyRecruitmentImmediateRecruitConfirm": {
         "next": [
-            "DailyRecruitmentImmediateSlot1Confirm"
+            "DailyRecruitmentImmediateSlot1Confirm",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentImmediateCollectResults": {
@@ -1974,13 +2085,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentImmediateResultRouter"
+            "DailyRecruitmentImmediateResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2011,13 +2125,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentImmediateResultRouter"
+            "DailyRecruitmentImmediateResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "post_delay": 200,
         "max_hit": 6,
@@ -2035,13 +2152,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "DailyRecruitmentImmediateCollectReturnRouter"
+            "DailyRecruitmentImmediateCollectReturnRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2059,7 +2179,8 @@
     },
     "DailyRecruitmentImmediateCollectCloseFallback": {
         "next": [
-            "DailyRecruitmentImmediateResultRouter"
+            "DailyRecruitmentImmediateResultRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 20000
     },
@@ -2088,7 +2209,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentDone"
+            "DailyRecruitmentDone",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2349,7 +2471,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentCycleRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
@@ -2488,7 +2611,9 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot1Ready",
-            "DailyRecruitmentImmediateSlot1RecruitButton"
+            "DailyRecruitmentImmediateSlot1Confirm",
+            "DailyRecruitmentImmediateSlot1RecruitButton",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -2504,7 +2629,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentImmediateSlot2Router"
+            "DailyRecruitmentImmediateSlot2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
@@ -2522,15 +2648,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentImmediateSlot1Confirm",
-            "DailyRecruitmentImmediateSlot1Ready"
+            "DailyRecruitmentImmediateSlot1Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2542,9 +2669,9 @@
             ],
             "timeout": 1200
         },
-        "post_delay": 200,
+        "post_delay": 1000,
         "timeout": 15000,
-        "max_hit": 1
+        "max_hit": 3
     },
     "DailyRecruitmentImmediateSlot1Confirm": {
         "recognition": {
@@ -2558,8 +2685,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true,
                 "target_offset": [
                     80,
@@ -2572,7 +2701,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot1Ready",
-            "DailyRecruitmentImmediateSlot1Confirm"
+            "DailyRecruitmentImmediateSlot1Confirm",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2636,7 +2766,9 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot2Ready",
-            "DailyRecruitmentImmediateSlot2RecruitButton"
+            "DailyRecruitmentImmediateSlot2Confirm",
+            "DailyRecruitmentImmediateSlot2RecruitButton",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -2652,7 +2784,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentImmediateSlot3Router"
+            "DailyRecruitmentImmediateSlot3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
@@ -2670,15 +2803,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentImmediateSlot2Confirm",
-            "DailyRecruitmentImmediateSlot2Ready"
+            "DailyRecruitmentImmediateSlot2Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2690,9 +2824,9 @@
             ],
             "timeout": 1200
         },
-        "post_delay": 200,
+        "post_delay": 1000,
         "timeout": 15000,
-        "max_hit": 1
+        "max_hit": 3
     },
     "DailyRecruitmentImmediateSlot2Confirm": {
         "recognition": {
@@ -2706,8 +2840,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true,
                 "target_offset": [
                     80,
@@ -2720,7 +2856,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot2Ready",
-            "DailyRecruitmentImmediateSlot2Confirm"
+            "DailyRecruitmentImmediateSlot2Confirm",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2784,7 +2921,9 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot3Ready",
-            "DailyRecruitmentImmediateSlot3RecruitButton"
+            "DailyRecruitmentImmediateSlot3Confirm",
+            "DailyRecruitmentImmediateSlot3RecruitButton",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -2800,7 +2939,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentImmediateSlot4Router"
+            "DailyRecruitmentImmediateSlot4Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
@@ -2818,15 +2958,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentImmediateSlot3Confirm",
-            "DailyRecruitmentImmediateSlot3Ready"
+            "DailyRecruitmentImmediateSlot3Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2838,9 +2979,9 @@
             ],
             "timeout": 1200
         },
-        "post_delay": 200,
+        "post_delay": 1000,
         "timeout": 15000,
-        "max_hit": 1
+        "max_hit": 3
     },
     "DailyRecruitmentImmediateSlot3Confirm": {
         "recognition": {
@@ -2854,8 +2995,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true,
                 "target_offset": [
                     80,
@@ -2868,7 +3011,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot3Ready",
-            "DailyRecruitmentImmediateSlot3Confirm"
+            "DailyRecruitmentImmediateSlot3Confirm",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2932,7 +3076,9 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot4Ready",
-            "DailyRecruitmentImmediateSlot4RecruitButton"
+            "DailyRecruitmentImmediateSlot4Confirm",
+            "DailyRecruitmentImmediateSlot4RecruitButton",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -2948,7 +3094,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentImmediateBatchRouter"
+            "DailyRecruitmentImmediateBatchRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
@@ -2966,15 +3113,16 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true
             }
         },
         "next": [
-            "[JumpBack]CommonWaitLoading",
-            "DailyRecruitmentImmediateSlot4Confirm",
-            "DailyRecruitmentImmediateSlot4Ready"
+            "DailyRecruitmentImmediateSlot4Router",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -2986,9 +3134,9 @@
             ],
             "timeout": 1200
         },
-        "post_delay": 200,
+        "post_delay": 1000,
         "timeout": 15000,
-        "max_hit": 1
+        "max_hit": 3
     },
     "DailyRecruitmentImmediateSlot4Confirm": {
         "recognition": {
@@ -3002,8 +3150,10 @@
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {},
                 "target": true,
                 "target_offset": [
                     80,
@@ -3016,7 +3166,8 @@
         "next": [
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateSlot4Ready",
-            "DailyRecruitmentImmediateSlot4Confirm"
+            "DailyRecruitmentImmediateSlot4Confirm",
+            "DailyRecruitmentResumeFromMain"
         ],
         "pre_wait_freezes": {
             "time": 300,
@@ -3036,7 +3187,8 @@
             "[JumpBack]CommonWaitLoading",
             "DailyRecruitmentImmediateCollectResults",
             "DailyRecruitmentBudgetFinished",
-            "DailyRecruitmentImmediateAllSkipped"
+            "DailyRecruitmentImmediateAllSkipped",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -3051,21 +3203,24 @@
             }
         },
         "next": [
-            "DailyRecruitmentReturnFromOverview"
+            "DailyRecruitmentReturnFromOverview",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500
     },
     "DailyRecruitmentImmediateResultRouter": {
         "next": [
             "DailyRecruitmentImmediateCollectSkip",
-            "DailyRecruitmentImmediateCollectClose"
+            "DailyRecruitmentImmediateCollectClose",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 20000
     },
     "DailyRecruitmentCollectResultRouter": {
         "next": [
             "DailyRecruitmentCollectSkip",
-            "DailyRecruitmentCollectClose"
+            "DailyRecruitmentCollectClose",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 20000
     },
@@ -3081,7 +3236,8 @@
         },
         "next": [
             "DailyRecruitmentCollectResumeCycle",
-            "DailyRecruitmentCycleRouter"
+            "DailyRecruitmentCycleRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "action": {
             "type": "Custom",
@@ -3095,7 +3251,8 @@
         "next": [
             "DailyRecruitmentCollectSkip",
             "DailyRecruitmentCollectClose",
-            "DailyRecruitmentCollectReturned"
+            "DailyRecruitmentCollectReturned",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -3103,7 +3260,8 @@
         "next": [
             "DailyRecruitmentImmediateCollectSkip",
             "DailyRecruitmentImmediateCollectClose",
-            "DailyRecruitmentCycleCompleted"
+            "DailyRecruitmentCycleCompleted",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 15000
     },
@@ -3118,7 +3276,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentTag1Selected": {
@@ -3225,14 +3384,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot1SelectTag1Router": {
         "next": [
             "DailyRecruitmentSlot1SelectionComplete",
             "DailyRecruitmentSlot1SelectTag1Done",
-            "DailyRecruitmentSlot1SelectTag1"
+            "DailyRecruitmentSlot1SelectTag1",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3249,14 +3410,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag2Router"
+            "DailyRecruitmentSlot1SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot1SelectTag2Router": {
         "next": [
             "DailyRecruitmentSlot1SelectionComplete",
             "DailyRecruitmentSlot1SelectTag2Done",
-            "DailyRecruitmentSlot1SelectTag2"
+            "DailyRecruitmentSlot1SelectTag2",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3273,14 +3436,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag3Router"
+            "DailyRecruitmentSlot1SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot1SelectTag3Router": {
         "next": [
             "DailyRecruitmentSlot1SelectionComplete",
             "DailyRecruitmentSlot1SelectTag3Done",
-            "DailyRecruitmentSlot1SelectTag3"
+            "DailyRecruitmentSlot1SelectTag3",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3297,7 +3462,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1StartRecruit"
+            "DailyRecruitmentSlot1StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot2CanPrepare": {
@@ -3324,14 +3490,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot2SelectTag1Router": {
         "next": [
             "DailyRecruitmentSlot2SelectionComplete",
             "DailyRecruitmentSlot2SelectTag1Done",
-            "DailyRecruitmentSlot2SelectTag1"
+            "DailyRecruitmentSlot2SelectTag1",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3348,14 +3516,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag2Router"
+            "DailyRecruitmentSlot2SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot2SelectTag2Router": {
         "next": [
             "DailyRecruitmentSlot2SelectionComplete",
             "DailyRecruitmentSlot2SelectTag2Done",
-            "DailyRecruitmentSlot2SelectTag2"
+            "DailyRecruitmentSlot2SelectTag2",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3372,14 +3542,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag3Router"
+            "DailyRecruitmentSlot2SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot2SelectTag3Router": {
         "next": [
             "DailyRecruitmentSlot2SelectionComplete",
             "DailyRecruitmentSlot2SelectTag3Done",
-            "DailyRecruitmentSlot2SelectTag3"
+            "DailyRecruitmentSlot2SelectTag3",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3396,7 +3568,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2StartRecruit"
+            "DailyRecruitmentSlot2StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot3CanPrepare": {
@@ -3423,14 +3596,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot3SelectTag1Router": {
         "next": [
             "DailyRecruitmentSlot3SelectionComplete",
             "DailyRecruitmentSlot3SelectTag1Done",
-            "DailyRecruitmentSlot3SelectTag1"
+            "DailyRecruitmentSlot3SelectTag1",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3447,14 +3622,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag2Router"
+            "DailyRecruitmentSlot3SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot3SelectTag2Router": {
         "next": [
             "DailyRecruitmentSlot3SelectionComplete",
             "DailyRecruitmentSlot3SelectTag2Done",
-            "DailyRecruitmentSlot3SelectTag2"
+            "DailyRecruitmentSlot3SelectTag2",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3471,14 +3648,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag3Router"
+            "DailyRecruitmentSlot3SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot3SelectTag3Router": {
         "next": [
             "DailyRecruitmentSlot3SelectionComplete",
             "DailyRecruitmentSlot3SelectTag3Done",
-            "DailyRecruitmentSlot3SelectTag3"
+            "DailyRecruitmentSlot3SelectTag3",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3495,7 +3674,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3StartRecruit"
+            "DailyRecruitmentSlot3StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot4CanPrepare": {
@@ -3522,14 +3702,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot4SelectTag1Router": {
         "next": [
             "DailyRecruitmentSlot4SelectionComplete",
             "DailyRecruitmentSlot4SelectTag1Done",
-            "DailyRecruitmentSlot4SelectTag1"
+            "DailyRecruitmentSlot4SelectTag1",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3546,14 +3728,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag2Router"
+            "DailyRecruitmentSlot4SelectTag2Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot4SelectTag2Router": {
         "next": [
             "DailyRecruitmentSlot4SelectionComplete",
             "DailyRecruitmentSlot4SelectTag2Done",
-            "DailyRecruitmentSlot4SelectTag2"
+            "DailyRecruitmentSlot4SelectTag2",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3570,14 +3754,16 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag3Router"
+            "DailyRecruitmentSlot4SelectTag3Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "DailyRecruitmentSlot4SelectTag3Router": {
         "next": [
             "DailyRecruitmentSlot4SelectionComplete",
             "DailyRecruitmentSlot4SelectTag3Done",
-            "DailyRecruitmentSlot4SelectTag3"
+            "DailyRecruitmentSlot4SelectTag3",
+            "DailyRecruitmentResumeFromMain"
         ],
         "timeout": 10000
     },
@@ -3594,7 +3780,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4StartRecruit"
+            "DailyRecruitmentSlot4StartRecruit",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSetupNineHours": {
@@ -3624,7 +3811,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot1SelectTag1Router"
+            "DailyRecruitmentSlot1SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot1CanSubmitDecision": {
@@ -3651,7 +3839,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot2SelectTag1Router"
+            "DailyRecruitmentSlot2SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot2CanSubmitDecision": {
@@ -3678,7 +3867,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot3SelectTag1Router"
+            "DailyRecruitmentSlot3SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot3CanSubmitDecision": {
@@ -3705,7 +3895,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentSlot4SelectTag1Router"
+            "DailyRecruitmentSlot4SelectTag1Router",
+            "DailyRecruitmentResumeFromMain"
         ]
     },
     "__DailyRecruitmentSlot4CanSubmitDecision": {
@@ -3736,7 +3927,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentReturnFromOverview"
+            "DailyRecruitmentReturnFromOverview",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 500,
         "focus": {
@@ -3777,7 +3969,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -3804,7 +3997,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -3855,7 +4049,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -3882,7 +4077,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -3933,7 +4129,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -3960,7 +4157,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -4011,7 +4209,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -4038,7 +4237,8 @@
             }
         },
         "next": [
-            "DailyRecruitmentOverviewRouter"
+            "DailyRecruitmentOverviewRouter",
+            "DailyRecruitmentResumeFromMain"
         ],
         "rate_limit": 1000,
         "timeout": 10000
@@ -4053,6 +4253,33 @@
                     "slot": 4
                 }
             }
+        }
+    },
+    "DailyRecruitmentResumeFromMain": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": [
+                        "CommonMainReady"
+                    ],
+                    "absent": [
+                        "TkfmRecoverySessionExpiredTarget",
+                        "GameCloseGift",
+                        "GameCloseAnnouncement",
+                        "GameCloseEventSignIn",
+                        "TkfmRecoveryMonthlyCardTarget"
+                    ]
+                }
+            }
+        },
+        "next": [
+            "DailyRecruitmentStartAttempt"
+        ],
+        "max_hit": 3,
+        "focus": {
+            "Node.Action.Starting": "征才：异常恢复已回主页，重新进入全境征才，保留已完成次数和当前批次；回到主页不代表征才已完成。"
         }
     }
 }

@@ -215,7 +215,12 @@ class DailyRecruitmentBudgetState(CustomRecognition):
                     if result and result.hit:
                         box = result.box
             elif mode == "can_accelerate":
-                if len(entries) < maximum and _planned_acceleration(context, slot):
+                # A missed opening click may be retried, but after submitting the
+                # confirmation only wait for its result or retry that same prompt.
+                # Returning home cannot grant another ticket-consuming submission.
+                confirmed = context.get_hit_count(f"DailyRecruitmentImmediateSlot{slot}Confirm") > 0
+                detail["confirmation_attempted"] = confirmed
+                if len(entries) < maximum and _planned_acceleration(context, slot) and not confirmed:
                     box = OVERVIEW_BOX
             elif _overview_is_clear(context, argv.image):
                 if mode == "finished":
