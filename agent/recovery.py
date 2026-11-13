@@ -11,9 +11,12 @@ from common import safe_json_loads
 
 
 POPUP_NODES = (
+    "TkfmRecoverySessionExpired",
     "TkfmRecoveryAdvertisement",
     "TkfmRecoveryAnnouncement",
     "TkfmRecoveryEventSignIn",
+    "TkfmRecoverySignIn",
+    "GameCloseSignIn",
     "TkfmRecoveryBackButton",
     "GameLoginBackFallback",
     "GameLoginExistingGiftFallback",
@@ -29,13 +32,19 @@ class TkfmRecoveryPopup(CustomRecognition):
                 param = safe_json_loads(param, {})
             target = param.get("target") if isinstance(param, dict) else None
             if target not in (
+                "TkfmRecoverySessionExpiredTarget",
                 "GameCloseGift",
                 "GameCloseAnnouncement",
                 "GameCloseEventSignIn",
+                "TkfmRecoveryMonthlyCardTarget",
                 "TkfmRecoveryBackButtonTarget",
             ):
                 return self._miss("invalid_popup_target")
             used = sum(context.get_hit_count(name) for name in POPUP_NODES)
+            if target == "TkfmRecoveryMonthlyCardTarget" and (
+                context.get_hit_count("TkfmRecoverySignIn") + context.get_hit_count("GameCloseSignIn") >= 1
+            ):
+                return self._miss("monthly_card_already_clicked_once", used)
             if used >= 2:
                 return self._miss("popup_recovery_limit_reached", used)
             result = context.run_recognition(target, argv.image)

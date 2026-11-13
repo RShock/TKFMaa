@@ -16,13 +16,112 @@
                 "DailyAlchemyOrdersCollect",
                 "DailyAlchemyOrdersDeliverVisibleOrder",
                 "DailyAlchemyOrdersStartBlueProduction",
+                "TkfmRecoverySessionExpired",
                 "TkfmRecoveryAdvertisement",
                 "TkfmRecoveryAnnouncement",
                 "TkfmRecoveryEventSignIn",
+                "TkfmRecoverySignIn",
+                "GameCloseSignIn",
                 "TkfmRecoveryBackButton",
+                "TkfmRecoverySystemBack",
                 "GameLoginBackFallback",
                 "GameLoginExistingGiftFallback"
             ]
+        }
+    },
+    "TkfmRecoverySessionExpiredTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "GameLogin/SessionExpiredTitle720.png",
+                "roi": [
+                    290,
+                    505,
+                    140,
+                    90
+                ],
+                "threshold": 0.9
+            }
+        }
+    },
+    "TkfmRecoverySessionExpiredButton": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "GameLogin/SessionExpiredConfirm720.png",
+                "roi": [
+                    235,
+                    655,
+                    250,
+                    110
+                ],
+                "threshold": 0.94
+            }
+        }
+    },
+    "TkfmRecoverySessionExpiredTarget": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "TkfmRecoverySessionExpiredTitle",
+                    "TkfmRecoverySessionExpiredButton"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "TkfmRecoverySessionExpiredPriority": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "TkfmRecoverySessionExpiredTarget"
+                ]
+            }
+        },
+        "next": [
+            "TkfmRecoverySessionExpired"
+        ],
+        "on_error": [
+            "TkfmTaskFailure"
+        ],
+        "timeout": 1000
+    },
+    "TkfmRecoverySessionExpired": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "TkfmRecoverySessionExpiredTarget"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "timeout": 1000,
+        "max_hit": 2,
+        "next": [
+            "GameLoginEnsureReady"
+        ],
+        "on_error": [
+            "TkfmTaskFailure"
+        ],
+        "focus": {
+            "Node.Action.Starting": "异常恢复：检测到中部提示框和确定按钮，按服务器异常／跨日失效处理，点击按钮中心后重新进入登录流程（共享最多两次）。",
+            "Node.Action.Succeeded": "已点击异常提示的确定按钮，继续识别登录页面；识别到无遮挡的出征后再继续原任务，保留购买与消耗记录。"
         }
     },
     "TkfmRecoveryRestartGame": {
@@ -116,7 +215,7 @@
             "TkfmRecoveryAnnouncement"
         ],
         "focus": {
-            "Node.Action.Starting": "异常恢复：检测到公告标题，尝试关闭（与广告、签到和普通返回合计最多两次）。"
+            "Node.Action.Starting": "异常恢复：检测到王城公布栏等公告标题，点击屏幕下方空白处关闭，再继续识别登录页面（共享最多两次恢复）。"
         }
     },
     "TkfmRecoveryEventSignIn": {
@@ -143,8 +242,11 @@
         },
         "post_delay": 800,
         "timeout": 10000,
+        "next": [
+            "GameLoginEnsureReady"
+        ],
         "focus": {
-            "Node.Action.Starting": "异常恢复：检测到活动签到页的“结束时间”四字，点击文字中心，再继续原步骤识别（与广告、公告和普通返回合计最多两次）。"
+            "Node.Action.Starting": "异常恢复：检测到活动签到页的“结束时间”，点击文字中心；随后继续处理月度签到等登录页面，确认出征后再返回原步骤（共享最多两次恢复）。"
         }
     },
     "TkfmRecoveryBackButtonTarget": {
@@ -160,6 +262,59 @@
                 ],
                 "threshold": 0.9
             }
+        }
+    },
+    "TkfmRecoveryMonthlyCardTitle": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "GameLogin/MonthlyCardTitle720.png",
+                "roi": [0, 750, 190, 80],
+                "threshold": 0.9
+            }
+        }
+    },
+    "TkfmRecoveryMonthlyCardTarget": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "TkfmRecoveryMonthlyCardTitle",
+                    "__GameSignInTouchScreen"
+                ],
+                "box_index": 1
+            }
+        }
+    },
+    "TkfmRecoverySignIn": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "TkfmRecoveryMonthlyCardTarget"
+                }
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
+            }
+        },
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "post_delay": 800,
+        "max_hit": 1,
+        "next": [
+            "GameLoginDispatch"
+        ],
+        "focus": {
+            "Node.Action.Starting": "异常恢复：检测到“魔王月卡”和底部 TOUCH SCREEN，点击 TOUCH SCREEN 中心恰好一次，随后复用登录流程关闭公告和广告，看到无遮挡的出征后再继续原任务。"
         }
     },
     "TkfmRecoveryBackButton": {
@@ -211,9 +366,11 @@
                         "TkfmRecoveryVisibleGame"
                     ],
                     "absent": [
+                        "TkfmRecoverySessionExpiredTarget",
                         "GameCloseGift",
                         "GameCloseAnnouncement",
-                        "GameCloseEventSignIn"
+                        "GameCloseEventSignIn",
+                        "TkfmRecoveryMonthlyCardTarget"
                     ]
                 }
             }
@@ -249,6 +406,34 @@
         ],
         "focus": {
             "Node.Action.Succeeded": "异常恢复：公告已关闭，继续识别当前登录页面；看到出征即完成，不等待广告。"
+        }
+    },
+    "__TkfmRecoveryAnyScreen": {
+        "recognition": {
+            "type": "DirectHit"
+        }
+    },
+    "TkfmRecoverySystemBack": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": ["__TkfmRecoveryAnyScreen"],
+                    "absent": ["CommonMainReady"]
+                }
+            }
+        },
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": [4]
+            }
+        },
+        "post_delay": 1000,
+        "max_hit": 3,
+        "focus": {
+            "Node.Action.Starting": "异常恢复：已知恢复均未命中，发送一次安卓返回键，随后重新识别当前步骤；每任务最多三次，已回主页时不发送。"
         }
     },
     "TkfmRecoveryUnhandled": {

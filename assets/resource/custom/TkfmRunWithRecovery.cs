@@ -69,8 +69,10 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
             processor.AddLog("[异常恢复] " + label + "：开始执行。", changeColor: false);
             // Install error branches on this module's context, before preparation and retries.
             // JumpBack retains the existing pipeline stack and business bookkeeping.
-            foreach (string popup in new[] { "TkfmRecoveryAdvertisement", "TkfmRecoveryAnnouncement",
-                "TkfmRecoveryEventSignIn", "TkfmRecoveryBackButton", "GameLoginBackFallback",
+            foreach (string popup in new[] { "TkfmRecoverySessionExpired", "TkfmRecoveryAdvertisement",
+                "TkfmRecoveryAnnouncement",
+                "TkfmRecoveryEventSignIn", "TkfmRecoverySignIn", "GameCloseSignIn",
+                "TkfmRecoveryBackButton", "TkfmRecoverySystemBack", "GameLoginBackFallback",
                 "GameLoginExistingGiftFallback" })
                 if (context.GetHitCount(popup, out var popupCount) && popupCount > 0 && !context.ClearHitCount(popup))
                     throw new InvalidOperationException("无法初始化弹窗恢复额度：" + popup);
@@ -118,6 +120,7 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
                 return false;
             }
             if (Cancelled(context, processor)) return false;
+            LoggerHelper.Error("TKFMaa 恢复调度异常：" + ex.ToString());
             string reason = "恢复调度失败：" + ex.Message + "；不递归重启。";
             return failureBehavior == PauseBehavior
                 ? PauseForFailure(processor, reason, continueAfterFailure)
@@ -236,11 +239,25 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
             if (next.Count == 0 && original.Count == 0) continue;
             // A normal page can have the same arrow as an advertisement. Recognize the
             // complete back button first so it uses navigation recovery and its truthful log.
-            var errors = new JArray("[JumpBack]TkfmRecoveryAnnouncement", "[JumpBack]TkfmRecoveryEventSignIn",
-                "[JumpBack]TkfmRecoveryBackButton", "[JumpBack]TkfmRecoveryAdvertisement");
+            var errors = new JArray("[JumpBack]TkfmRecoverySessionExpired", "[JumpBack]TkfmRecoveryAnnouncement",
+                "[JumpBack]TkfmRecoveryEventSignIn", "[JumpBack]TkfmRecoverySignIn",
+                "[JumpBack]TkfmRecoveryBackButton", "[JumpBack]TkfmRecoveryAdvertisement",
+                "[JumpBack]TkfmRecoverySystemBack");
             foreach (var item in original) errors.Add(item.DeepClone());
             if (original.Count == 0) errors.Add("TkfmRecoveryUnhandled");
-            overrides[name] = new JObject { ["on_error"] = errors };
+            var patch = new JObject { ["on_error"] = errors };
+            // Session expiry interrupts every module, including pages with ordinary confirm
+            // buttons. Recognize it before business candidates, without restarting the module.
+            // A separate route avoids repeating the same node in next and on_error.
+            if (next.Count > 0 && !next.Any(item => IsJumpBackRoute(item, "TkfmRecoverySessionExpiredPriority")))
+            {
+                next.Insert(0, new JObject
+                {
+                    ["name"] = "TkfmRecoverySessionExpiredPriority", ["jump_back"] = true, ["anchor"] = false
+                });
+                patch["next"] = next;
+            }
+            overrides[name] = patch;
         }
         // Recovery may finish a login subflow, but must never stop its parent task.
         // Only the recognized home page completes a login subflow; no advertisement is required.
@@ -254,6 +271,19 @@ public sealed class TkfmRunWithRecovery : IMaaCustomAction
     private static JArray NodeList(JToken? value) => value is JArray array
         ? (JArray)array.DeepClone() : value == null || value.Type == JTokenType.Null
             ? new JArray() : new JArray(value.DeepClone());
+
+    private static bool IsJumpBackRoute(JToken value, string name)
+    {
+        // GetNodeData returns resolved NodeAttr objects, even for string routes
+        // written in source JSON. Keep their jump_back/anchor attributes intact.
+        if (value.Type == JTokenType.String)
+            return string.Equals((string)value, "[JumpBack]" + name, StringComparison.Ordinal);
+        if (value is JObject route)
+            return string.Equals((string)route["name"], name, StringComparison.Ordinal)
+                && route["jump_back"]?.Type == JTokenType.Boolean && (bool)route["jump_back"]
+                && !(route["anchor"]?.Type == JTokenType.Boolean && (bool)route["anchor"]);
+        return false;
+    }
 
     private static JObject RetryOverride(IMaaContext context, string entry)
     {

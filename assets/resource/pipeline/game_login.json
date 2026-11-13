@@ -51,6 +51,7 @@
         },
         "timeout": 360000,
         "next": [
+            "[JumpBack]TkfmRecoverySessionExpiredPriority",
             "[JumpBack]GameLoginReconnect",
             "GameLoginReconnectExhausted",
             "[JumpBack]GameSkipStartupAnimation",
@@ -73,32 +74,30 @@
     },
     "GameLoginWaitTapScreen": {
         "recognition": {
-            "type": "TemplateMatch",
+            "type": "Custom",
             "param": {
-                "template": [
-                    "GameLogin/AdvertisementReturn720.png"
-                ],
-                "threshold": 0.99,
-                "roi": [
-                    0,
-                    45,
-                    125,
-                    65
-                ]
+                "custom_recognition": "TaskCompletionGuard",
+                "custom_recognition_param": {
+                    "required": ["__GameSignInTouchScreen"],
+                    "absent": ["TkfmRecoveryMonthlyCardTitle"]
+                }
             }
         },
-        "inverse": true,
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [
-                    360,
-                    1135
-                ]
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
         "pre_delay": 0,
-        "post_delay": 1000
+        "post_delay": 1000,
+        "max_hit": 4,
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        }
     },
     "GameLoginReconnect": {
         "recognition": {
@@ -234,7 +233,8 @@
                     130
                 ]
             }
-        }
+        },
+        "max_hit": 180
     },
     "GameCloseEventSignIn": {
         "recognition": {
@@ -311,26 +311,42 @@
                 65
             ],
             "timeout": 1500
+        },
+        "focus": {
+            "Node.Action.Starting": "检测到王城公布栏等公告标题，点击屏幕下方空白处关闭。",
+            "Node.Action.Succeeded": "已点击公告下方空白处，继续识别公告、广告或主页。"
         }
     },
     "GameCloseSignIn": {
         "recognition": {
-            "type": "And",
+            "type": "Custom",
             "param": {
-                "all_of": [
-                    "__GameSignInTouchScreen"
-                ]
+                "custom_recognition": "TkfmRecoveryPopup",
+                "custom_recognition_param": {
+                    "target": "TkfmRecoveryMonthlyCardTarget"
+                }
             }
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": true
+                "custom_action": "ClickRecognitionCenter",
+                "custom_action_param": {}
             }
         },
-        "max_hit": 4,
+        "max_hit": 1,
         "post_delay": 800,
-        "pre_wait_freezes": 300
+        "next": [
+            "GameLoginDispatch"
+        ],
+        "pre_wait_freezes": {
+            "time": 300,
+            "target": true,
+            "timeout": 1500
+        },
+        "focus": {
+            "Node.Action.Starting": "检测到“魔王月卡”和底部 TOUCH SCREEN，点击文字中心一次，继续通过登录分发器处理公告和广告；本任务不重复补点。"
+        }
     },
     "GameCloseGift": {
         "recognition": {
@@ -379,10 +395,12 @@
                         "__CommonMainExpeditionButton"
                     ],
                     "absent": [
+                        "TkfmRecoverySessionExpiredTarget",
                         "TkfmRecoveryBackButtonTarget",
                         "GameCloseGift",
                         "GameCloseAnnouncement",
-                        "GameCloseEventSignIn"
+                        "GameCloseEventSignIn",
+                        "TkfmRecoveryMonthlyCardTarget"
                     ]
                 }
             }
@@ -391,12 +409,12 @@
             "type": "StopTask"
         },
         "focus": {
-            "Node.Action.Starting": "游戏页面准备完成：已识别到出征，且未识别到返回按钮、公告或活动签到遮挡。"
+            "Node.Action.Starting": "游戏页面准备完成：已识别到出征，且未识别到服务器异常／跨日提示、返回按钮、公告、活动签到或月度签到遮挡。"
         }
     },
     "__GameSignInTouchScreen": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
                 "roi": [
                     140,
@@ -404,10 +422,10 @@
                     440,
                     170
                 ],
-                "expected": [
-                    "TOUCH\\s*SCREEN"
+                "template": [
+                    "GameLogin/SignInTouchScreen720.png"
                 ],
-                "threshold": 0.5
+                "threshold": 0.9
             }
         }
     },
@@ -421,6 +439,7 @@
             "type": "Or",
             "param": {
                 "any_of": [
+                    "TkfmRecoverySessionExpiredTarget",
                     "GameLoginReconnect",
                     "GameSkipStartupAnimation",
                     "CommonWaitLoading",
@@ -476,6 +495,7 @@
             "type": "Or",
             "param": {
                 "any_of": [
+                    "TkfmRecoverySessionExpiredTarget",
                     "GameLoginReconnect",
                     "GameTapTitleScreen",
                     "GameWaitResourceCheck",
@@ -539,6 +559,7 @@
         },
         "timeout": 360000,
         "next": [
+            "[JumpBack]TkfmRecoverySessionExpiredPriority",
             "[JumpBack]GameLoginReconnect",
             "GameLoginReconnectExhausted",
             "[JumpBack]GameSkipStartupAnimation",
@@ -636,6 +657,7 @@
         },
         "timeout": 10000,
         "next": [
+            "[JumpBack]TkfmRecoverySessionExpiredPriority",
             "[JumpBack]GameLoginReconnect",
             "GameLoginReconnectExhausted",
             "[JumpBack]GameSkipStartupAnimation",
