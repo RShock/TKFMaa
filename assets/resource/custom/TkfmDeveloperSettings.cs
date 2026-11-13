@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -17,8 +16,7 @@ using MFAAvalonia.Helper;
 using MFAAvalonia.ViewModels.UsersControls.Settings;
 using MFAAvalonia.Views.UserControls.Settings;
 
-// UI only. The frontend compiles each custom file independently, so cross-service
-// calls use the shared AppDomain slots and reflection rather than dynamic types.
+// UI only. Keep the frontend's original log controls and scrolling untouched.
 public sealed class TkfmDeveloperSettings : IMaaCustomAction
 {
     public string Name { get; set; } = "TkfmDeveloperSettings";
@@ -38,12 +36,10 @@ public sealed class TkfmDeveloperSettings : IMaaCustomAction
 
 internal sealed class TkfmDeveloperSettingsService : IDisposable
 {
-    internal const string DetailedLogSetting = "TkfmDetailedLogEnabled";
     internal const string FailureBehaviorSetting = "TkfmFailureBehavior";
     internal const string RestartBehavior = "restart";
     internal const string PauseBehavior = "pause";
     private const string LegacyRestartSetting = "TkfmRestartFailedStep";
-    private const string DetailedLogServiceKey = "TKFMaa.DetailedLog.Service";
 
     private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
     private readonly HashSet<MaaProcessor> initialized = new HashSet<MaaProcessor>();
@@ -147,22 +143,6 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
                 processor.InstanceConfiguration.GetValue(ConfigurationKeys.ContinueRunningWhenError, false);
         }
 
-        var detailedLog = new ToggleSwitch
-        {
-            Name = "TkfmDeveloperDetailedLog",
-            Content = "开发者详细日志",
-            IsChecked = processor.InstanceConfiguration.GetValue(DetailedLogSetting, false)
-        };
-        ToolTip.SetTip(detailedLog,
-            "显示最近100条普通及详细记录，完整详细记录持续保存于 logs/detailed/；鼠标停留日志区域时暂停自动滚动，移开后跟随最新记录。仅影响当前实例。");
-        detailedLog.IsCheckedChanged += (_, __) =>
-        {
-            bool enabled = detailedLog.IsChecked == true;
-            processor.InstanceConfiguration.SetValue(DetailedLogSetting, enabled);
-            if (!TryInvokeService(DetailedLogServiceKey, "SetEnabled", processor, enabled))
-                processor.AddLog("[开发者设置] 详细日志开关已保存，重新连接后生效。", changeColor: false);
-        };
-
         var behavior = new ComboBox
         {
             Name = "TkfmFailureBehavior",
@@ -194,7 +174,6 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
             FontSize = 18,
             FontWeight = FontWeight.SemiBold
         });
-        panel.Children.Add(detailedLog);
         panel.Children.Add(behaviorRow);
         panel.Children.Add(new TextBlock
         {
@@ -288,29 +267,6 @@ internal sealed class TkfmDeveloperSettingsService : IDisposable
         return items.Cast<object>().Any(item =>
             string.Equals(item.GetType().GetProperty("Name")?.GetValue(item) as string,
                 "GitHub", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static bool TryInvokeService(string key, string methodName, params object[] args)
-    {
-        try
-        {
-            object? service = AppDomain.CurrentDomain.GetData(key);
-            var method = service?.GetType().GetMethod(methodName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (service == null || method == null) return false;
-            method.Invoke(service, args);
-            return true;
-        }
-        catch (TargetInvocationException ex)
-        {
-            LoggerHelper.Error("TKFMaa 开发者设置调用服务失败：" + (ex.InnerException?.Message ?? ex.Message));
-            return false;
-        }
-        catch (Exception ex)
-        {
-            LoggerHelper.Error("TKFMaa 开发者设置调用服务失败：" + ex.Message);
-            return false;
-        }
     }
 
     public void Dispose()
